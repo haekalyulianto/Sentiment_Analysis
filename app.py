@@ -259,7 +259,7 @@ if selected == "Sentimen Pasar":
     
 
     # ---------------------------- GRAFIK Saham Detrend ----------------------------
-    st.success('Grafik Saham Detrend '+ticker_symbol)
+    st.success('Grafik Saham '+ticker_symbol+' (Detrend)')
     st.write(util.plot_detrend(df_saham_detrend, 0))
     df_saham_detrend.to_excel('file_saham_detrend.xlsx')
 
@@ -299,7 +299,7 @@ if selected == "Sentimen Pasar":
     df_sentimen_berita_detrend['index'] = util.create_t(df_sentimen_berita, 'tanggal', 1)
 
     # ---------------------------- GRAFIK Sentimen Berita Detrend ----------------------------
-    st.success('Grafik Sentimen Berita Detrend '+ st.session_state.nama_bank)
+    st.success('Grafik Sentimen Berita '+ st.session_state.nama_bank+' (Detrend)')
     st.write(util.plot_detrend(df_sentimen_berita_detrend, 0))
     df_sentimen_berita_detrend.to_excel('file_sentimen_berita_detrend.xlsx')
     
@@ -319,10 +319,10 @@ if selected == "Sentimen Pasar":
     df_gabungan = pd.merge(df_saham, df_berita, on=['index'])
     df_gabungan_baru = pd.merge(df_saham, df_berita_ver2, on=['index'])
 
-    st.info('Korelasi Sentimen Berita '+st.session_state.nama_bank +' dan Grafik Harga Saham '+ticker_symbol)
+    st.info('Korelasi Grafik Sentimen Berita '+st.session_state.nama_bank +' dan Harga Saham '+ticker_symbol)
     st.write(df_gabungan_baru)
 
     st.write('\n\n')
 
-    st.info('Korelasi Sentimen Berita (Detrend) '+st.session_state.nama_bank +' dan Grafik Harga Saham '+ticker_symbol)
+    st.info('Korelasi Grafik Sentimen Berita '+st.session_state.nama_bank +' (Detrend) dan Harga Saham '+ticker_symbol)
     st.write(df_gabungan)
