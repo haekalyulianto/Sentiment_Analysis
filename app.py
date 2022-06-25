@@ -319,11 +319,10 @@ if selected == "Sentimen Pasar":
     df_gabungan = pd.merge(df_saham, df_berita, on=['index'])
     df_gabungan_baru = pd.merge(df_saham, df_berita_ver2, on=['index'])
 
-    st.info('Korelasi Sentimen Berita dan Grafik Harga Saham '+ st.session_state.nama_bank)
+    st.info('Korelasi Sentimen Berita '+st.session_state.nama_bank +' dan Grafik Harga Saham '+ticker_symbol)
     st.write(df_gabungan_baru)
 
     st.write('\n\n')
 
-    st.info('Korelasi Sentimen Berita (Detrend) dan Grafik Harga Saham '+ st.session_state.nama_bank)
+    st.info('Korelasi Sentimen Berita (Detrend) '+st.session_state.nama_bank +' dan Grafik Harga Saham '+ticker_symbol)
     st.write(df_gabungan)
-
