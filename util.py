@@ -139,18 +139,6 @@ def create_sentimen_berita(df, namakolom):
 
     return sentiments
 
-def create_sentimen_berita_detrend(df, namakolom):
-    sentiments = []
-    for i in range (len(df)):
-        if(df[namakolom].iloc[i] > df['batas_atas'].iloc[i]):
-            sentiments.append('positif')
-        elif(df[namakolom].iloc[i] < df['batas_bawah'].iloc[i]):
-            sentiments.append('negatif')
-        else:
-            sentiments.append('netral')
-
-    return sentiments
-
 def form_date(df1, df2, namakolom1, namakolom2):
     tgl = []
     val = []
