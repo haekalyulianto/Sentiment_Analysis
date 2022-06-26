@@ -15,12 +15,14 @@ def get_ticker_data(ticker_symbol, data_period, data_interval):
         st.write("tidak ditemukan data emiten")
     else:
         ticker_data.index = ticker_data.index.strftime("%d-%m-%Y %H:%M")
+    
     return ticker_data
 
 def search_key(word):
     google_news = GNews(language='id', country='ID', period='1y', exclude_websites=None)
 
     news = google_news.get_news(word)
+    
     return news
 
 def date_convert(gmt_date):
@@ -29,6 +31,7 @@ def date_convert(gmt_date):
     gmt = datetime.strptime(gmt_date, '%a, %d %b %Y %H:%M:%S GMT')
     gmt = gmt.replace(tzinfo=from_zone)
     gmt = gmt.strftime('%Y-%m-%d')
+    
     return gmt
 
 def format_tanggal(df):
@@ -93,6 +96,7 @@ def plot_detrend(df, namakolom):
                         name='Batas Bawah'))
     fig.update_layout(height=540)
     fig.update_layout(width=960)
+    
     return fig
 
 def plot_normal(df, namakolom):
@@ -113,9 +117,10 @@ def plot_normal(df, namakolom):
                         name='Nilai Tengah'))
     fig.update_layout(height=540)
     fig.update_layout(width=960)
+    
     return fig
 
-def create_sentimen_saham(df, namakolom):
+def create_sentimen_detrend(df, namakolom):
     sentiments = []
     for i in range (len(df)):
         if(df[namakolom].iloc[i] > df['batas_atas'].iloc[i]):
@@ -127,7 +132,7 @@ def create_sentimen_saham(df, namakolom):
 
     return sentiments
 
-def create_sentimen_berita(df, namakolom):
+def create_sentimen(df, namakolom):
     sentiments = []
     for i in range (len(df)):
         if(df[namakolom].iloc[i] > 0.0):
