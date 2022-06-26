@@ -201,11 +201,12 @@ if selected == "Sentimen Berita":
             grouped_df['count_sentimen']
 
         df_filter2 = grouped_df.loc[:, ['tanggal', 'nilaisentimen']]
-        grouped_df2 = df_filter2.groupby(['tanggal']).sum().reset_index()
-        grouped_df3 = df_filter2.groupby(['tanggal']).sum()
+        grouped_df2 = df_filter2.groupby(['tanggal']).mean().reset_index()
+        grouped_df3 = df_filter2.groupby(['tanggal']).mean()
         df_filter2
         grouped_df2
         grouped_df2.to_csv('file_sentimen.csv', index=False)
+       
         df_new['title'] = titles
         df_new['sentimen'] = sentimens
         
@@ -257,14 +258,13 @@ if selected == "Sentimen Pasar":
     df_saham_detrend=pd.DataFrame(diff)
     df_saham_detrend['index'] = util.create_t(df, 'tanggal', 1)
     
-
     # ---------------------------- GRAFIK Saham Detrend ----------------------------
     st.success('Grafik Saham '+ticker_symbol+' (Detrend)')
     st.write(util.plot_detrend(df_saham_detrend, 0))
     df_saham_detrend.to_excel('file_saham_detrend.xlsx')
 
     # ---------------------------- Lanjutan Google Colab ----------------------------
-    df_saham_detrend['sentimen'] = util.create_sentimen_saham(df_saham_detrend, 0)
+    df_saham_detrend['sentimen'] = util.create_sentimen_detrend(df_saham_detrend, 0)
     df_sentimen_berita = df_sentimen
 
     df_temp = pd.DataFrame()
@@ -304,8 +304,8 @@ if selected == "Sentimen Pasar":
     df_sentimen_berita_detrend.to_excel('file_sentimen_berita_detrend.xlsx')
     
     # ---------------------------- Lanjutan Google Colab ----------------------------
-    df_sentimen_berita_detrend['sentimen'] = util.create_sentimen_berita(df_sentimen_berita_detrend, 0)
-    df_sentimen_berita_undetrend['sentimen'] = util.create_sentimen_berita(df_sentimen_berita_undetrend, 'nilaisentimen')
+    df_sentimen_berita_detrend['sentimen'] = util.create_sentimen(df_sentimen_berita_detrend, 0)
+    df_sentimen_berita_undetrend['sentimen'] = util.create_sentimen(df_sentimen_berita_undetrend, 'nilaisentimen')
 
     df_berita = df_sentimen_berita_detrend[['index', 'sentimen']]
     df_berita = df_berita.rename(columns={'sentimen': 'sentimen_berita'})   
