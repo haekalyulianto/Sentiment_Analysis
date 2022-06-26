@@ -36,7 +36,7 @@ selected = option_menu(
 )
 
 if 'nama_bank' not in st.session_state:
-    st.session_state['nama_bank'] = 'Bank Mandiri'
+    st.session_state['nama_bank'] = 'Bank Central Asia'
 
 if selected == "Sentimen Berita":
     
@@ -226,7 +226,7 @@ if selected == "Sentimen Pasar":
 
     num_rows = 1
 
-    ticker_symbol = st.sidebar.text_input('Kode Saham :', 'BMRI')
+    ticker_symbol = st.sidebar.text_input('Kode Saham :', 'BBCA')
     data_period = st.sidebar.text_input('Periode :', str(num_rows)+'y')
     data_interval = st.sidebar.radio(
         'Interval', ['1d', '5d', '15m', '30m', '1h'])
