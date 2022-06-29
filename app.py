@@ -1,5 +1,4 @@
 import string
-from threading import stack_size
 from gnews import GNews
 import streamlit as st
 import pandas as pd
@@ -36,7 +35,7 @@ selected = option_menu(
 )
 
 if 'nama_bank' not in st.session_state:
-    st.session_state['nama_bank'] = 'Bank Central Asia'
+    st.session_state['nama_bank'] = 'Bank Negara Indonesia'
 
 if selected == "Sentimen Berita":
     
@@ -226,7 +225,7 @@ if selected == "Sentimen Pasar":
 
     num_rows = 1
 
-    ticker_symbol = st.sidebar.text_input('Kode Saham :', 'BBCA')
+    ticker_symbol = st.sidebar.text_input('Kode Saham :', 'BBNI')
     data_period = st.sidebar.text_input('Periode :', str(num_rows)+'y')
     data_interval = st.sidebar.radio(
         'Interval', ['1d', '5d', '15m', '30m', '1h'])
@@ -254,24 +253,25 @@ if selected == "Sentimen Pasar":
     df.to_excel('file_saham.xlsx')
 
     # ---------------------------- Lanjutan Google Colab ----------------------------
-    diff = util.detrend(df, 'Close')
-    df_saham_detrend=pd.DataFrame(diff)
+    df_saham_detrend = pd.DataFrame()
+    df_saham_detrend[0] = df['Close'].pct_change()
+    df_saham_detrend = df_saham_detrend[1:]
     df_saham_detrend['index'] = util.create_t(df, 'tanggal', 1)
-    
+
     # ---------------------------- GRAFIK Saham Detrend ----------------------------
     st.success('Grafik Saham '+ticker_symbol+' (Detrend)')
-    st.write(util.plot_detrend(df_saham_detrend, 0))
+    st.write(util.plote(df_saham_detrend, 0, 'index'))
     df_saham_detrend.to_excel('file_saham_detrend.xlsx')
 
     # ---------------------------- Lanjutan Google Colab ----------------------------
     df_saham_detrend['sentimen'] = util.create_sentimen_detrend(df_saham_detrend, 0)
     df_sentimen_berita = df_sentimen
 
-    df_temp = pd.DataFrame()
-    df_temp['tanggal'], df_temp['nilaisentimen'] = util.form_date(df, df_sentimen_berita, 'tanggal', 'tanggal')
+    df_temp1 = pd.DataFrame()
+    df_temp1['tanggal'], df_temp1['nilaisentimen'] = util.form_date_harian(df, df_sentimen_berita, 'tanggal', 'tanggal')
 
-    df_temp2 = pd.concat([df_sentimen_berita, df_temp])
-    df_temp2['tanggal'] = pd.concat([df_sentimen_berita['tanggal'], df_temp['tanggal']])
+    df_temp2 = pd.concat([df_sentimen_berita, df_temp1])
+    df_temp2['tanggal'] = pd.concat([df_sentimen_berita['tanggal'], df_temp1['tanggal']])
 
     df_sentimen_berita1 = pd.DataFrame()
     df_sentimen_berita1['tanggal'], df_sentimen_berita1['nilaisentimen'] = util.remove_holiday(df_temp2, df, 'tanggal', 'nilaisentimen', 'tanggal')
@@ -279,7 +279,8 @@ if selected == "Sentimen Pasar":
     df_sentimen_berita = df_sentimen_berita1
     df_sentimen_berita = df_sentimen_berita.sort_values('tanggal')
 
-    df_sentimen_berita = df_sentimen_berita.fillna(df_sentimen_berita['nilaisentimen'].mean())
+    #df_sentimen_berita = df_sentimen_berita.fillna(method='ffill')
+    df_sentimen_berita = df_sentimen_berita.interpolate()
 
     df_sentimen_berita['index'] = util.create_t(df_sentimen_berita, 'tanggal', 0)
     
@@ -289,40 +290,93 @@ if selected == "Sentimen Pasar":
     df_sentimen_berita.to_excel('file_sentimen_berita.xlsx')
 
     # ---------------------------- Lanjutan Google Colab ----------------------------
-    diff = util.detrend(df_sentimen_berita, 'nilaisentimen')
-    df_sentimen_berita_detrend=pd.DataFrame(diff)
-
     df_sentimen_berita_undetrend = df_sentimen_berita
     df_sentimen_berita_undetrend['index'] = util.create_t(df_sentimen_berita_undetrend, 'tanggal', 0)
     df_sentimen_berita_undetrend = df_sentimen_berita_undetrend.drop(df_sentimen_berita_undetrend.index[0])
 
-    df_sentimen_berita_detrend['index'] = util.create_t(df_sentimen_berita, 'tanggal', 1)
-
-    # ---------------------------- GRAFIK Sentimen Berita Detrend ----------------------------
-    st.success('Grafik Sentimen Berita '+ st.session_state.nama_bank+' (Detrend)')
-    st.write(util.plot_detrend(df_sentimen_berita_detrend, 0))
-    df_sentimen_berita_detrend.to_excel('file_sentimen_berita_detrend.xlsx')
-    
     # ---------------------------- Lanjutan Google Colab ----------------------------
-    df_sentimen_berita_detrend['sentimen'] = util.create_sentimen(df_sentimen_berita_detrend, 0)
     df_sentimen_berita_undetrend['sentimen'] = util.create_sentimen(df_sentimen_berita_undetrend, 'nilaisentimen')
 
-    df_berita = df_sentimen_berita_detrend[['index', 'sentimen']]
-    df_berita = df_berita.rename(columns={'sentimen': 'sentimen_berita'})   
+    df_berita_harian = df_sentimen_berita_undetrend[['index', 'sentimen', 'nilaisentimen', 'tanggal']]
+    df_berita_harian = df_berita_harian.rename(columns={'sentimen': 'sentimen_berita'})
+    df_berita_harian = df_berita_harian.rename(columns={'nilaisentimen': 'nilai_sentimen_berita'})
 
-    df_berita_ver2 = df_sentimen_berita_undetrend[['index', 'sentimen']]
-    df_berita_ver2 = df_berita_ver2.rename(columns={'sentimen': 'sentimen_berita'})
+    df_saham_harian = df_saham_detrend[['index', 'sentimen',  0]]
+    df_saham_harian = df_saham_harian.rename(columns={'sentimen' : 'sentimen_saham'})
+    df_saham_harian = df_saham_harian.rename(columns={0 : 'nilai_sentimen_saham'})
 
-    df_saham = df_saham_detrend[['index', 'sentimen']]
-    df_saham = df_saham.rename(columns={'sentimen': 'sentimen_saham'})
+    df_gabungan_harian = pd.merge(df_saham_harian, df_berita_harian, on=['index'])
+    
+    # ---------------------------- Korelasi Harian  ----------------------------
+    st.info('Korelasi Grafik Harga Saham '+ticker_symbol+' dan Sentimen Berita '+st.session_state.nama_bank+' (Harian)')
+    st.write(df_gabungan_harian)
+    
+    st.write('\n\n')
 
-    df_gabungan = pd.merge(df_saham, df_berita, on=['index'])
-    df_gabungan_baru = pd.merge(df_saham, df_berita_ver2, on=['index'])
-
-    st.info('Korelasi Grafik Sentimen Berita '+st.session_state.nama_bank +' dan Harga Saham '+ticker_symbol)
-    st.write(df_gabungan_baru)
+    st.write('Nilai Koefisien Korelasi')
+    st.write(df_gabungan_harian.corr())
 
     st.write('\n\n')
 
-    st.info('Korelasi Grafik Sentimen Berita '+st.session_state.nama_bank +' (Detrend) dan Harga Saham '+ticker_symbol)
-    st.write(df_gabungan)
+    # ---------------------------- Korelasi Mingguan  ----------------------------
+    df_saham = df
+    df_saham[0] = df['Close'].pct_change()
+    df_saham = df_saham[1:]
+
+    df_saham = df_saham.drop(columns=['Close'])
+
+    df_saham['sentimen'] = util.create_sentimen_detrend(df_saham_detrend, 0)
+
+    df_berita = pd.read_csv("file_sentimen.csv")
+    start_date = df_saham['tanggal'].iloc[0]
+
+    df_temp_1 = pd.DataFrame()
+    df_temp_1['tanggal'], df_temp_1['nilaisentimen'] = util.form_date_mingguan(df_berita, start_date, 'tanggal')
+
+    df_temp_2 = df_berita.append(df_temp_1)
+    df_temp_2['tanggal'] = df_berita['tanggal'].append(df_temp_1['tanggal'])
+
+    df_berita = df_temp_2
+    df_berita = df_berita.sort_values('tanggal')
+
+    df_berita = df_berita.interpolate()
+
+    totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
+    df_berita_weekly = pd.DataFrame({'tanggal': tanggals ,'sentimenweekly': totals})
+
+    util.plote(df_berita_weekly, 'sentimenweekly', 'tanggal')
+    
+    df_berita_weekly['sentimen'] = util.create_sentimen_detrend(df_berita_weekly, 'sentimenweekly')
+
+    df_saham_weekly = pd.DataFrame()
+    df_saham_weekly['tanggal'], df_saham_weekly['sentimenweekly'] = util.calculate_weekly_saham(df_saham,0)
+
+    df_berita_weekly = df_berita_weekly[len(df_berita_weekly)-len(df_saham_weekly):]
+
+    util.plote(df_saham_weekly, 'sentimenweekly', 'tanggal')
+
+    df_saham_weekly['sentimen'] = util.create_sentimen_detrend(df_saham_weekly, 'sentimenweekly')
+
+    df_saham_mingguan = df_saham_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
+    df_saham_mingguan = df_saham_mingguan.rename(columns={'tanggal': 'Tanggal Saham', 'sentimenweekly': 'Nilai Sentimen Saham', 'sentimen': 'Sentimen Saham'})
+
+    df_berita_mingguan = df_berita_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
+    df_berita_mingguan = df_berita_mingguan.rename(columns={'tanggal': 'Tanggal Berita', 'sentimenweekly': 'Nilai Sentimen Berita', 'sentimen': 'Sentimen Berita'})
+
+    df_gabungan_mingguan = pd.merge(df_saham_mingguan, df_berita_mingguan, left_index=True, right_index=True)
+
+    df_gabungan_check = df_gabungan_mingguan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
+
+    # ---------------------------- Korelasi Harian  ----------------------------
+    st.info('Korelasi Grafik Harga Saham '+ticker_symbol+' dan Sentimen Berita '+st.session_state.nama_bank+' (Mingguan)')
+    st.write(df_gabungan_mingguan)
+    
+    st.write('\n\n')
+
+    st.write('Nilai Koefisien Korelasi')
+    st.write(df_gabungan_check.corr())
+
+    st.write('\n\n')
+
+    st.write('Skor Kesesuaian')
+    st.write(str(util.calculate_score(df_gabungan_mingguan, 'Sentimen Saham', 'Sentimen Berita')))
