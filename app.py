@@ -297,7 +297,7 @@ if selected == "Sentimen Pasar":
     # ---------------------------- Lanjutan Google Colab ----------------------------
     df_sentimen_berita_undetrend['sentimen'] = util.create_sentimen(df_sentimen_berita_undetrend, 'nilaisentimen')
 
-    df_berita_harian = df_sentimen_berita_undetrend[['index', 'sentimen', 'nilaisentimen', 'tanggal']]
+    df_berita_harian = df_sentimen_berita_undetrend[['index', 'sentimen', 'nilaisentimen']]
     df_berita_harian = df_berita_harian.rename(columns={'sentimen': 'sentimen_berita'})
     df_berita_harian = df_berita_harian.rename(columns={'nilaisentimen': 'nilai_sentimen_berita'})
 
