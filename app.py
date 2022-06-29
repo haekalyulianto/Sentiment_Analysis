@@ -1,3 +1,4 @@
+from operator import index
 import string
 from gnews import GNews
 import streamlit as st
@@ -343,7 +344,7 @@ if selected == "Sentimen Pasar":
 
     totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
     df_berita_weekly = pd.DataFrame({'tanggal': tanggals ,'sentimenweekly': totals})
-
+ 
     util.plote(df_berita_weekly, 'sentimenweekly', 'tanggal')
     
     df_berita_weekly['sentimen'] = util.create_sentimen_detrend(df_berita_weekly, 'sentimenweekly')
@@ -359,11 +360,13 @@ if selected == "Sentimen Pasar":
 
     df_saham_mingguan = df_saham_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
     df_saham_mingguan = df_saham_mingguan.rename(columns={'tanggal': 'Tanggal Saham', 'sentimenweekly': 'Nilai Sentimen Saham', 'sentimen': 'Sentimen Saham'})
-
+    df_saham_mingguan = df_saham_mingguan.reset_index(drop=True)
+    
     df_berita_mingguan = df_berita_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
     df_berita_mingguan = df_berita_mingguan.rename(columns={'tanggal': 'Tanggal Berita', 'sentimenweekly': 'Nilai Sentimen Berita', 'sentimen': 'Sentimen Berita'})
+    df_berita_mingguan = df_berita_mingguan.reset_index(drop=True)
 
-    df_gabungan_mingguan = pd.merge(df_saham_mingguan, df_berita_mingguan, left_index=True, right_index=True)
+    df_gabungan_mingguan = pd.concat([df_saham_mingguan, df_berita_mingguan], axis=1)
 
     df_gabungan_check = df_gabungan_mingguan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
 
