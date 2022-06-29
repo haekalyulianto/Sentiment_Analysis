@@ -18,23 +18,23 @@ def get_ticker_data(ticker_symbol, data_period, data_interval):
     
     return ticker_data
 
-def search_key(word):
-    google_news = GNews(language='id', country='ID', period='1y', exclude_websites=None)
+def search_key(word, period):
+    google_news = GNews(language='id', country='ID', period=period, exclude_websites=None)
 
     news = google_news.get_news(word)
     
     return news
 
-def date_convert(gmt_date):
+def convert_date(gmt_date):
     from_zone = tz.gettz('GMT')
-    to_zone = tz.gettz('US/Eastern')
+    #to_zone = tz.gettz('US/Eastern')
     gmt = datetime.strptime(gmt_date, '%a, %d %b %Y %H:%M:%S GMT')
     gmt = gmt.replace(tzinfo=from_zone)
     gmt = gmt.strftime('%Y-%m-%d')
     
     return gmt
 
-def format_tanggal(df):
+def format_date(df):
     tanggal_emiten = []
     for i in range(len(df.index)):
         tgl = df.index[i].split(' ')[0].split('-')
@@ -42,21 +42,6 @@ def format_tanggal(df):
         tanggal_emiten.append(tgl)
 
     return tanggal_emiten  
-
-def create_t(df, namakolom, start_idx):
-    time_idx = []
-
-    date_time_str1 = df[namakolom].iloc[0]
-    date_time_obj1 = datetime.strptime(date_time_str1, '%Y-%m-%d')
-
-    for i in range (start_idx,len(df)):
-        date_time_str2 = df[namakolom].iloc[i]
-        date_time_obj2 = datetime.strptime(date_time_str2, '%Y-%m-%d')
-
-        deltadays = (date_time_obj2 - date_time_obj1).days
-        time_idx.append('t+'+str(deltadays))
-
-    return time_idx
 
 def detrend(df, namakolom):
     X=df[namakolom].values
@@ -67,7 +52,7 @@ def detrend(df, namakolom):
 
     return diff
 
-def plote(df, namakolom1, namakolom2):
+def plot(df, namakolom1, namakolom2):
     df['batas_atas'] = df[namakolom1].mean()+(1.03*df[namakolom1].std())
     df['nilai_tengah'] = df[namakolom1].mean()
     df['batas_bawah'] = df[namakolom1].mean()-(1.03*df[namakolom1].std())
@@ -99,8 +84,8 @@ def plote(df, namakolom1, namakolom2):
 
     return fig
      
-def plot_normal(df, namakolom):
-    df['nilai_tengah'] = df[namakolom].mean()
+def plot_normal(df, namakolom1, namakolom2):
+    df['nilai_tengah'] = df[namakolom1].mean()
 
     layout = go.Layout(
     paper_bgcolor='rgba(0,0,0,0)',
@@ -108,10 +93,10 @@ def plot_normal(df, namakolom):
 
     fig = go.Figure(layout=layout)
 
-    fig.add_trace(go.Scatter(x=df['index'], 
-                        y=df[namakolom], 
+    fig.add_trace(go.Scatter(x=df[namakolom2], 
+                        y=df[namakolom1], 
                         name='Emiten'))
-    fig.add_trace(go.Scatter(x=df['index'], 
+    fig.add_trace(go.Scatter(x=df[namakolom2], 
                         y=df['nilai_tengah'], 
                         marker=dict(color="red"), 
                         name='Nilai Tengah'))
@@ -120,7 +105,7 @@ def plot_normal(df, namakolom):
     
     return fig
 
-def create_sentimen_detrend(df, namakolom):
+def create_sentimen(df, namakolom):
     sentiments = []
     for i in range (len(df)):
         if(df[namakolom].iloc[i] > df['batas_atas'].iloc[i]):
@@ -132,78 +117,44 @@ def create_sentimen_detrend(df, namakolom):
 
     return sentiments
 
-def create_sentimen(df, namakolom):
-    sentiments = []
-    for i in range (len(df)):
-        if(df[namakolom].iloc[i] > 0.0):
-            sentiments.append('positif')
-        elif(df[namakolom].iloc[i] < 0.0):
-            sentiments.append('negatif')
-        else:
-            sentiments.append('netral')
-
-    return sentiments
-
-def form_date_harian(df1, df2, namakolom1, namakolom2):
-    tgl = []
-    val = []
-    
-    for i in range(len(df1)):
-        if (not df1[namakolom1].iloc[i] in list(df2[namakolom2])):
-            tgl.append(df1[namakolom1].iloc[i])
-            val.append(np.NaN)
-
-    return tgl, val
-
 def form_date_mingguan(df, start_date, namakolom):
-  tgl = []
-  val = []
-
-  start_date = datetime.strptime(start_date, '%Y-%m-%d')
-  delta = timedelta(days=365)
-  end_date = start_date + delta
-
-  delta = timedelta(days=1)
-  
-  while (start_date <= end_date):
-    if (not start_date.strftime('%Y-%m-%d') in list(df[namakolom])):
-      tgl.append(start_date.strftime('%Y-%m-%d'))
-      val.append(np.NaN)
-    start_date += delta
-
-  return tgl, val
-
-def remove_holiday(df1, df2, namakolom1, namakolom2, namakolom3):
     tgl = []
     val = []
 
-    for i in range(len(df1)):
-        if (df1[namakolom1].iloc[i] in list(df2[namakolom3])):
-            tgl.append(df1[namakolom1].iloc[i])
-            val.append(df1[namakolom2].iloc[i])
+    start_date = datetime.strptime(start_date, '%Y-%m-%d')
+    delta = timedelta(days=365)
+    end_date = start_date + delta
+
+    delta = timedelta(days=1)
+    
+    while (start_date <= end_date):
+        if (not start_date.strftime('%Y-%m-%d') in list(df[namakolom])):
+            tgl.append(start_date.strftime('%Y-%m-%d'))
+            val.append(np.NaN)
+        start_date += delta
 
     return tgl, val
 
 def calculate_weekly_berita(df1, df2 , namakolom1, namakolom2):
-  # df1 = berita
-  # df2 = saham
+    # df1 = berita
+    # df2 = saham
   
-  totals = []
-  tanggals = []
+    totals = []
+    tanggals = []
   
-  for i in range(len(df1) - 7):
-    tgl = df1[namakolom1].iloc[i].split('-')
+    for i in range(len(df1) - 7):
+        tgl = df1[namakolom1].iloc[i].split('-')
+        if ((datetime(int(tgl[0]), int(tgl[1]), int(tgl[2])).isoweekday() < 6) and (df1[namakolom1].iloc[i+7] in list(df2[namakolom2]))):
+            
+            total = 0     
+            
+            for j in range(i,i+7):
+                if (not np.isnan(df1['nilaisentimen'].iloc[j])):
+                    total += df1['nilaisentimen'].iloc[j]
+            totals.append(total)
+            tanggals.append(df1[namakolom1].iloc[i])
 
-    if ((datetime(int(tgl[0]), int(tgl[1]), int(tgl[2])).isoweekday() < 6) and (df1[namakolom1].iloc[i+7] in list(df2[namakolom2]))):
-      total = 0
-      for j in range(i,i+7):
-        
-        if (not np.isnan(df1['nilaisentimen'].iloc[j])):
-          total += df1['nilaisentimen'].iloc[j]
-      totals.append(total)
-      tanggals.append(df1[namakolom1].iloc[i])
-
-  return totals, tanggals
+    return totals, tanggals
 
 def calculate_weekly_saham(df, namakolom):
     weekly_sahams = []
@@ -222,12 +173,12 @@ def calculate_weekly_saham(df, namakolom):
     return tanggals, weekly_sahams
 
 def calculate_score(df, namakolom1, namakolom2):
-  cocok = 0
+    cocok = 0
 
-  for i in range (len(df)):
-    if (df[namakolom1].iloc[i] == df[namakolom2].iloc[i]):
-      cocok += 1
+    for i in range (len(df)):
+        if (df[namakolom1].iloc[i] == df[namakolom2].iloc[i]):
+            cocok += 1
 
-  nilai = (cocok/len(df))*100
+    nilai = (cocok/len(df))*100
 
-  return nilai
+    return nilai
