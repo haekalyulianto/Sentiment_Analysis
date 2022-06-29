@@ -43,7 +43,12 @@ if selected == "Sentimen Berita":
     
     # Konfigurasi Web
     USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'
-
+    
+    # Grafik Sentimen Berita
+    df_berita = pd.read_csv("file_sentimen.csv")
+    st.success('Grafik Sentimen Berita '+ st.session_state.nama_bank)
+    st.write(util.plot_normal(df_berita, 'nilaisentimen', 'tanggal'))
+    
     # Menjalankan Analisis Sentimen Berita
     if st.sidebar.button('Run'):
         
@@ -192,9 +197,7 @@ if selected == "Sentimen Pasar":
 
     # Grafik Sentimen Berita
     df_berita = pd.read_csv("file_sentimen.csv")
-    
-    st.success('Grafik Sentimen Berita '+ st.session_state.nama_bank)
-    st.write(util.plot_normal(df_berita, 'nilaisentimen', 'tanggal'))
+    util.plot_normal(df_berita, 'nilaisentimen', 'tanggal')
     
     start_date = df_saham['tanggal'].iloc[0]
 
