@@ -262,7 +262,7 @@ if selected == "Korelasi Sentimen":
     st.write(util.plot(df_berita_weekly, 'sentimenweekly', 'tanggal'))
 
     # Tabel Korelasi dan Kesesuaian
-    st.info('Korelasi Grafik Harga Saham dan Sentimen Berita (Mingguan)')
+    st.info('Korelasi Grafik Sentimen Saham dan Berita (Mingguan)')
     st.write(df_gabungan_mingguan)
     st.write('\n\n')
     st.write('Nilai Koefisien Korelasi')
