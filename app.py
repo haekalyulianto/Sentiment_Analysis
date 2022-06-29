@@ -280,7 +280,7 @@ if selected == "Sentimen Pasar":
     df_sentimen_berita = df_sentimen_berita.sort_values('tanggal')
 
     #df_sentimen_berita = df_sentimen_berita.fillna(method='ffill')
-    df_sentimen_berita = df_sentimen_berita.interpolate()
+    #df_sentimen_berita = df_sentimen_berita.interpolate()
 
     df_sentimen_berita['index'] = util.create_t(df_sentimen_berita, 'tanggal', 0)
     
