@@ -280,7 +280,7 @@ if selected == "Sentimen Pasar":
     df_sentimen_berita = df_sentimen_berita.sort_values('tanggal')
 
     #df_sentimen_berita = df_sentimen_berita.fillna(method='ffill')
-    #df_sentimen_berita = df_sentimen_berita.interpolate()
+    df_sentimen_berita = df_sentimen_berita.interpolate()
 
     df_sentimen_berita['index'] = util.create_t(df_sentimen_berita, 'tanggal', 0)
     
@@ -339,7 +339,7 @@ if selected == "Sentimen Pasar":
     df_berita = df_temp_2
     df_berita = df_berita.sort_values('tanggal')
 
-    df_berita = df_berita.interpolate()
+    #df_berita = df_berita.interpolate()
 
     totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
     df_berita_weekly = pd.DataFrame({'tanggal': tanggals ,'sentimenweekly': totals})
