@@ -244,6 +244,7 @@ if selected == "Sentimen Pasar":
     df_gabungan_mingguan = pd.concat([df_saham_mingguan, df_berita_mingguan], axis=1)
     df_gabungan_mingguan.to_csv('df_gabungan_mingguan.csv', index=False)
 
+# Menu Korelasi Sentimen
 if selected == "Korelasi Sentimen":
     
     # Sunting Sidebar
