@@ -32,7 +32,7 @@ if 'nama_bank' not in st.session_state:
 
 # Menu Sentimen Berita
 if selected == "Sentimen Berita":
-    
+ 
     # Sunting Sidebar
     st.sidebar.image("LPS.png", output_format='PNG')
     search = st.sidebar.text_input('Pencarian :', st.session_state.nama_bank)
@@ -40,15 +40,10 @@ if selected == "Sentimen Berita":
     options = st.sidebar.multiselect('Situs Pencarian  :', ['cnbcindonesia.com', 'cnnindonesia.com', 'ekonomi.bisnis.com', 'money.kompas.com'], ['cnbcindonesia.com', 'cnnindonesia.com', 'ekonomi.bisnis.com', 'money.kompas.com'])
     num_periode = '1y'
     data_period = st.sidebar.text_input('Periode :', num_periode)
-    
+        
     # Konfigurasi Web
     USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'
-    
-    # Grafik Sentimen Berita
-    df_berita = pd.read_csv("file_sentimen.csv")
-    st.success('Grafik Sentimen Berita '+ st.session_state.nama_bank)
-    st.write(util.plot_normal(df_berita, 'nilaisentimen', 'tanggal'))
-    
+  
     # Menjalankan Analisis Sentimen Berita
     if st.sidebar.button('Run'):
         
@@ -69,7 +64,6 @@ if selected == "Sentimen Berita":
         hasilanalisis = []
 
         st.header("Analisis Sentimen Berita")
-
 
         for indonesia_news in hasilsearch:
 
@@ -150,6 +144,14 @@ if selected == "Sentimen Berita":
         grouped_df2 = df_filter2.groupby(['tanggal']).mean().reset_index()
         grouped_df3 = df_filter2.groupby(['tanggal']).mean()
         grouped_df2.to_csv('file_sentimen.csv', index=False)
+    
+    else:
+        st.header("Analisis Sentimen Berita")
+
+        # Grafik Sentimen Berita
+        df_berita = pd.read_csv("file_sentimen.csv")
+        st.success('Grafik Sentimen Berita '+ st.session_state.nama_bank)
+        st.write(util.plot_normal(df_berita, 'nilaisentimen', 'tanggal'))
 
 # Menu Sentimen Pasar
 if selected == "Sentimen Pasar":
@@ -208,7 +210,6 @@ if selected == "Sentimen Pasar":
     df_temp_2['tanggal'] = df_berita['tanggal'].append(df_temp_1['tanggal'])
     df_berita = df_temp_2
     df_berita = df_berita.sort_values('tanggal')
-    ##df_berita = df_berita.interpolate()
 
     # Hitung Sentimen Berita Mingguan
     totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
