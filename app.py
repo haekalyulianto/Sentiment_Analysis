@@ -253,7 +253,7 @@ if selected == "Korelasi Sentimen":
 
     # Ambil Data
     df_gabungan_mingguan = pd.read_csv('df_gabungan_mingguan.csv')
-    df_gabungan_check = pd.read_csv('df_gabungan_check.csv')
+    df_gabungan_check = df_gabungan_mingguan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
     df_saham_weekly = pd.read_csv('df_saham_weekly.csv')
     df_berita_weekly = pd.read_csv('df_berita_weekly.csv')
     
