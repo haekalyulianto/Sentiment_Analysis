@@ -6,6 +6,8 @@ from datetime import datetime
 from dateutil import tz
 import numpy as np
 from datetime import timedelta
+from math import floor, log10
+
 
 def get_ticker_data(ticker_symbol, data_period, data_interval):
     ticker_data = yf.download(tickers=ticker_symbol,
@@ -53,9 +55,9 @@ def detrend(df, namakolom):
     return diff
 
 def plot(df, namakolom1, namakolom2):
-    df['batas_atas'] = df[namakolom1].mean()+(1.03*df[namakolom1].std())
+    df['batas_atas'] = df[namakolom1].mean()+(1.64*df[namakolom1].std())
     df['nilai_tengah'] = df[namakolom1].mean()
-    df['batas_bawah'] = df[namakolom1].mean()-(1.03*df[namakolom1].std())
+    df['batas_bawah'] = df[namakolom1].mean()-(1.64*df[namakolom1].std())
     df[namakolom1] = df[namakolom1]*2
 
     layout = go.Layout(
@@ -159,13 +161,14 @@ def calculate_weekly_berita(df1, df2 , namakolom1, namakolom2):
 def calculate_weekly_saham(df, namakolom):
     weekly_sahams = []
     tanggals = []
-
+    
     for i in range(len(df)-5):
-        if (df[namakolom].iloc[i] == 0):
+        if (df[namakolom].iloc[i] == 0): # x/0
             weekly_saham = -1
-        
+        elif (df[namakolom].iloc[i+5] !=0 and df[namakolom].iloc[i] !=0 and (abs(-floor(log10(abs(df[namakolom].iloc[i]))) - 1) - (abs(-floor(log10(abs(df[namakolom].iloc[i+5]))) - 1))) >= 2): # high diff
+                weekly_saham = weekly_saham/1.64
         else:
-            weekly_saham = (df[namakolom].iloc[i+5]/df[namakolom].iloc[i])-1
+            weekly_saham = ((df[namakolom].iloc[i+5]-df[namakolom].iloc[i])/df[namakolom].iloc[i])
             
         tanggals.append(df['tanggal'].iloc[i+5])
         weekly_sahams.append(weekly_saham)
