@@ -1,3 +1,4 @@
+from operator import index
 import string
 import streamlit as st
 import pandas as pd
@@ -19,7 +20,7 @@ do_refresh = st.sidebar.button('Refresh')
 # Konfigurasi Pilihan Menu
 selected = option_menu(
     menu_title=None,
-    options=["Sentimen Berita", "Sentimen Pasar", "Korelasi Sentimen"],
+    options=["Sentimen Berita", "Sentimen Pasar", "Kesesuaian Sentimen"],
     icons=["newspaper", "bank", "graph-up"],
     menu_icon="cast",
     default_index=1,
@@ -186,7 +187,8 @@ if selected == "Sentimen Pasar":
     st.write(util.plot_normal(df, 'Close', 'tanggal'))
     
     # Grafik Saham Detrend
-    df_saham[0] = df['Close'].pct_change() 
+    df_saham[0] = df['Close'].pct_change()
+    df_saham.to_excel('df_saham.xlsx', index=False) 
     st.success('Grafik Saham '+ticker_symbol+' (Detrend)')
     st.write(util.plot(df, 0, 'tanggal'))
     
@@ -199,6 +201,7 @@ if selected == "Sentimen Pasar":
 
     # Grafik Sentimen Berita
     df_berita = pd.read_csv("file_sentimen.csv")
+    df_berita.to_excel('df_berita.xlsx', index=False)
     util.plot_normal(df_berita, 'nilaisentimen', 'tanggal')
     
     start_date = df_saham['tanggal'].iloc[0]
@@ -215,6 +218,7 @@ if selected == "Sentimen Pasar":
     totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
     df_berita_weekly = pd.DataFrame({'tanggal': tanggals ,'sentimenweekly': totals})
     df_berita_weekly.to_csv('df_berita_weekly.csv', index=False)
+    df_berita_weekly.to_excel('df_berita_weekly.xlsx', index=False)
     util.plot(df_berita_weekly, 'sentimenweekly', 'tanggal')
     df_berita_weekly['sentimen'] = util.create_sentimen(df_berita_weekly, 'sentimenweekly')
     
@@ -222,6 +226,7 @@ if selected == "Sentimen Pasar":
     df_saham_weekly = pd.DataFrame()
     df_saham_weekly['tanggal'], df_saham_weekly['sentimenweekly'] = util.calculate_weekly_saham(df_saham,0)
     df_saham_weekly.to_csv('df_saham_weekly.csv', index=False)
+    df_saham_weekly.to_excel('df_saham_weekly.xlsx', index=False)
     util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal')
     
     # Memastikan Mulai di Baris yang Sama
@@ -229,6 +234,7 @@ if selected == "Sentimen Pasar":
 
     # Buat Sentimen Saham Mingguan
     df_saham_weekly['sentimen'] = util.create_sentimen(df_saham_weekly, 'sentimenweekly')
+    df_saham_weekly.to_excel('df_saham_ver2.xlsx')
 
     # Format Data Saham Mingguan
     df_saham_mingguan = df_saham_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
@@ -243,13 +249,14 @@ if selected == "Sentimen Pasar":
     # Data Gabungan Mingguan
     df_gabungan_mingguan = pd.concat([df_saham_mingguan, df_berita_mingguan], axis=1)
     df_gabungan_mingguan.to_csv('df_gabungan_mingguan.csv', index=False)
+    df_gabungan_mingguan.to_excel('df_gabungan_mingguan.xlsx', index=False)
 
-# Menu Korelasi Sentimen
-if selected == "Korelasi Sentimen":
+# Menu Kesesuaian Sentimen
+if selected == "Kesesuaian Sentimen":
     
     # Sunting Sidebar
     st.sidebar.image("LPS.png", output_format='PNG')
-    st.header("Analisis Korelasi Sentimen")
+    st.header("Analisis Kesesuaian Sentimen")
 
     # Ambil Data
     df_gabungan_mingguan = pd.read_csv('df_gabungan_mingguan.csv')
@@ -257,18 +264,31 @@ if selected == "Korelasi Sentimen":
     df_saham_weekly = pd.read_csv('df_saham_weekly.csv')
     df_berita_weekly = pd.read_csv('df_berita_weekly.csv')
     
+    # Filter Data yang Sesuai
+    df_sesuai_check = df_gabungan_mingguan[(df_gabungan_mingguan['Sentimen Saham'] == df_gabungan_mingguan['Sentimen Berita'])].reset_index(drop=True)
+    df_berita_check = df_sesuai_check[['Tanggal Berita', 'Nilai Sentimen Berita']].reset_index(drop=True)
+    util.plot(df_berita_check, 'Nilai Sentimen Berita', 'Tanggal Berita')
+    df_berita_check = df_berita_check[['Tanggal Berita', 'Nilai Sentimen Berita', 'batas_atas', 'batas_bawah']]
+    df_berita_check = df_berita_check.rename(columns={'tanggal': 'Tanggal Berita', 'batas_atas': 'Batas Atas', 'batas_bawah': 'Batas Bawah'})
+
     # Grafik Sentimen Saham dan Berita
     st.success('Grafik Sentimen Saham Mingguan')
     st.write(util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal'))
     st.success('Grafik Sentimen Berita Mingguan')
     st.write(util.plot(df_berita_weekly, 'sentimenweekly', 'tanggal'))
 
-    # Tabel Korelasi dan Kesesuaian
-    st.info('Korelasi Grafik Sentimen Saham dan Berita (Mingguan)')
+    # Tabel Kesesuaian
+    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan)')
     st.write(df_gabungan_mingguan)
     st.write('\n\n')
-    st.write('Nilai Koefisien Korelasi')
-    st.write(df_gabungan_check.corr())
     st.write('\n\n')
     st.write('Skor Kesesuaian')
     st.write(str(util.calculate_score(df_gabungan_mingguan, 'Sentimen Saham', 'Sentimen Berita')))
+    
+    # Tabel Kesesuaian Data yang Sesuai
+    st.write('\n\n')
+    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) yang Sesuai')
+    st.write(df_sesuai_check.reset_index(drop=True))
+    st.write('\n\n')
+    st.write('Batas Sentimen Atas dan Bawah')
+    st.write(df_berita_check.reset_index(drop=True))
