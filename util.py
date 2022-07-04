@@ -165,6 +165,8 @@ def calculate_weekly_saham(df, namakolom):
     for i in range(len(df)-5):
         if (df[namakolom].iloc[i] == 0): # x/0
             weekly_saham = -1
+        elif (df[namakolom].iloc[i+5] !=0 and df[namakolom].iloc[i] !=0 and (abs(-floor(log10(abs(df[namakolom].iloc[i]))) - 1) - (abs(-floor(log10(abs(df[namakolom].iloc[i+5]))) - 1))) >= 2): # high diff
+            weekly_saham = weekly_saham/1.64
         else:
             weekly_saham = ((df[namakolom].iloc[i+5]-df[namakolom].iloc[i])/df[namakolom].iloc[i])
             
