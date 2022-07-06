@@ -285,6 +285,9 @@ if selected == "Kesesuaian Sentimen":
     st.write('Skor Kesesuaian')
     st.write(str(util.calculate_score(df_gabungan_mingguan, 'Sentimen Saham', 'Sentimen Berita')))
     
+    
+    
+    
     # Tabel Kesesuaian Data yang Sesuai
     st.write('\n\n')
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) yang Sesuai')
@@ -292,3 +295,8 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
     st.write('Batas Sentimen Atas dan Bawah')
     st.write(df_berita_check.reset_index(drop=True))
+    
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Korelasi')
+    st.write(str(df_sesuai_check.corr())
