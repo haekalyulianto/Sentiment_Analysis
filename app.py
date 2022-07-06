@@ -299,4 +299,9 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
     st.write('\n\n')
     st.write('Skor Korelasi')
+    st.write(df_berita_check.corr())
+    
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Korelasi')
     st.write(df_sesuai_check.corr())
