@@ -271,6 +271,13 @@ if selected == "Kesesuaian Sentimen":
     df_berita_check = df_berita_check[['Tanggal Berita', 'Nilai Sentimen Berita', 'batas_atas', 'batas_bawah']]
     df_berita_check = df_berita_check.rename(columns={'tanggal': 'Tanggal Berita', 'batas_atas': 'Batas Atas', 'batas_bawah': 'Batas Bawah'})
 
+    # Hitung Kendalltau
+    tau, p_value = stats.kendalltau(df_gabungan_check['Nilai Sentimen Saham'], df_gabungan_check['Nilai Sentimen Berita'])
+
+    # Hitung lag
+    lag = 21
+    df_gabungan_lag_check = util.calculate_lag(df_gabungan_check, lag)
+    
     # Grafik Sentimen Saham dan Berita
     st.success('Grafik Sentimen Saham Mingguan')
     st.write(util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal'))
@@ -285,9 +292,6 @@ if selected == "Kesesuaian Sentimen":
     st.write('Skor Kesesuaian')
     st.write(str(util.calculate_score(df_gabungan_mingguan, 'Sentimen Saham', 'Sentimen Berita')))
     
-    
-    
-    
     # Tabel Kesesuaian Data yang Sesuai
     st.write('\n\n')
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) yang Sesuai')
@@ -296,12 +300,20 @@ if selected == "Kesesuaian Sentimen":
     st.write('Batas Sentimen Atas dan Bawah')
     st.write(df_berita_check.reset_index(drop=True))
     
+    # Korelasi Lag
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi (All)')
-    st.write(df_gabungan_check.corr())
+    st.write('Skor Korelasi Lag =', str(lag))
+    st.write(df_gabungan_lag_check)
     
+    # Tabel Korelasi All
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi (Sesuai)')
-    st.write(df_sesuai_check.corr())
+    st.write('Skor Korelasi')
+    st.write(df_gabungan_check.corr())
+
+    # Korelasi Kendalltau
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Tau =', str(tau))
+    st.write('Skor P-Value =', str(p_value))
