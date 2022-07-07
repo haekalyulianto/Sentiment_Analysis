@@ -278,7 +278,7 @@ if selected == "Kesesuaian Sentimen":
     tau, p_value = stats.kendalltau(df_gabungan_check['Nilai Sentimen Saham'], df_gabungan_check['Nilai Sentimen Berita'])
 
     # Hitung lag
-    lag = 21
+    lag = 28
     df_gabungan_lag_check = util.calculate_lag(df_gabungan_check, lag)
     
     # Grafik Sentimen Saham dan Berita
