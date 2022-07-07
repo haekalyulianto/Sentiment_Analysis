@@ -9,6 +9,9 @@ from streamlit_option_menu import option_menu
 import util
 import altair as alt
 import translators as ts
+from scipy import stats
+import warnings
+warnings.simplefilter(action='ignore')
 
 # Konfigurasi Halaman
 st.set_page_config(page_title="Analisis Sentimen",
