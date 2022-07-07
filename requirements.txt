@@ -2,7 +2,7 @@ altair==4.2.0
 datetime==4.4
 gnews==0.2.7
 nltk==3.7
-newspaper==0.2.8
+newspaper3k==0.2.8
 numpy==1.22.3
 pandas==1.4.2
 plotly==5.6.0
