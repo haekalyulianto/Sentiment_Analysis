@@ -7,7 +7,7 @@ from dateutil import tz
 import numpy as np
 from datetime import timedelta
 from math import floor, log10
-
+import pandas as pd
 
 def get_ticker_data(ticker_symbol, data_period, data_interval):
     ticker_data = yf.download(tickers=ticker_symbol,
@@ -185,3 +185,22 @@ def calculate_score(df, namakolom1, namakolom2):
     nilai = (cocok/len(df))*100
 
     return nilai
+
+def calculate_lag(df, lag):
+    nilaisentimenberita = []
+    nilaisentimensaham = []
+
+    for i in range (lag,len(df)):
+        totalsentimenberita = 0
+        totalsentimensaham = 0
+
+        for j in range (i-lag, i):
+            totalsentimenberita += df['Nilai Sentimen Berita'].iloc[j]
+            totalsentimensaham += df['Nilai Sentimen Saham'].iloc[j]
+        
+        nilaisentimenberita.append(totalsentimenberita)
+        nilaisentimensaham.append(totalsentimensaham)
+
+    df_lag = pd.DataFrame({'Nilai Sentimen Berita': nilaisentimenberita ,'Nilai Sentimen Saham': nilaisentimensaham})
+
+    return df_lag.corr()
