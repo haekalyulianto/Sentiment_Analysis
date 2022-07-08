@@ -337,6 +337,12 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
     st.write('\n\n')
 
+    # Grafik Sentimen Saham dan Berita Hari Lag
+    st.success('Grafik Sentimen Saham ' + dicthari[hari] + ' (Bulanan)')
+    st.write(util.plot(df_gabungan_hari[['Tanggal Saham', 'Nilai Sentimen Saham']], 'Nilai Sentimen Saham', 'Tanggal Saham'))
+    st.success('Grafik Sentimen Berita ' + dicthari[hari] + ' (Bulanan)')
+    st.write(util.plot(df_gabungan_hari[['Tanggal Berita', 'Nilai Sentimen Berita']], 'Nilai Sentimen Berita', 'Tanggal Berita'))
+    
     # Tabel Kesesuaian Hari Lag
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita Hari ' + dicthari[hari] + ' (Bulanan)')
     st.write(df_gabungan_hari)
