@@ -217,6 +217,16 @@ if selected == "Sentimen Pasar":
     df_berita = df_temp_2
     df_berita = df_berita.sort_values('tanggal')
 
+    # Tambahan
+    df_saham_temp = df_saham[['tanggal', 0]]
+    start_date = df_saham['tanggal'].iloc[0]
+    df_temp_3 = pd.DataFrame()
+    df_temp_3['tanggal'], df_temp_3[0] = util.form_date_mingguan(df_saham, start_date, 'tanggal')
+    df_temp_4 = df_saham_temp.append(df_temp_3)
+    df_temp_4['tanggal'] = df_saham_temp['tanggal'].append(df_temp_3['tanggal'])
+    df_saham_full = df_temp_4
+    df_saham_full = df_saham_full.sort_values('tanggal')
+
     # Hitung Sentimen Berita Mingguan
     totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
     df_berita_weekly = pd.DataFrame({'tanggal': tanggals ,'sentimenweekly': totals})
@@ -231,6 +241,19 @@ if selected == "Sentimen Pasar":
     df_saham_weekly.to_csv('df_saham_weekly.csv', index=False)
     df_saham_weekly.to_excel('df_saham_weekly.xlsx', index=False)
     util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal')
+
+    # df saham full
+    df_saham_full = df_saham_full[['tanggal', 0]]
+    df_saham_full = df_saham_full.rename(columns={'tanggal': 'Tanggal Saham', 0: 'Nilai Sentimen Saham'})
+    df_saham_full = df_saham_full.reset_index(drop=True)
+    
+    df_berita_full = df_berita[['tanggal', 'nilaisentimen']]
+    df_berita_full = df_berita_full.rename(columns={'tanggal': 'Tanggal Berita', 'nilaisentimen': 'Nilai Sentimen Berita'}) 
+    df_berita_full = df_berita_full.reset_index(drop=True)
+
+    df_gabungan_full = pd.concat([df_saham_full, df_berita_full], axis=1)
+    df_gabungan_full.to_csv('df_gabungan_full.csv', index=False)
+    df_gabungan_full.to_excel('df_gabungan_full.xlsx', index=False)
     
     # Memastikan Mulai di Baris yang Sama
     df_berita_weekly = df_berita_weekly[len(df_berita_weekly)-len(df_saham_weekly):]
@@ -266,57 +289,68 @@ if selected == "Kesesuaian Sentimen":
     df_gabungan_check = df_gabungan_mingguan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
     df_saham_weekly = pd.read_csv('df_saham_weekly.csv')
     df_berita_weekly = pd.read_csv('df_berita_weekly.csv')
-    
-    # Filter Data yang Sesuai
-    df_sesuai_check = df_gabungan_mingguan[(df_gabungan_mingguan['Sentimen Saham'] == df_gabungan_mingguan['Sentimen Berita'])].reset_index(drop=True)
-    df_berita_check = df_sesuai_check[['Tanggal Berita', 'Nilai Sentimen Berita']].reset_index(drop=True)
-    util.plot(df_berita_check, 'Nilai Sentimen Berita', 'Tanggal Berita')
-    df_berita_check = df_berita_check[['Tanggal Berita', 'Nilai Sentimen Berita', 'batas_atas', 'batas_bawah']]
-    df_berita_check = df_berita_check.rename(columns={'tanggal': 'Tanggal Berita', 'batas_atas': 'Batas Atas', 'batas_bawah': 'Batas Bawah'})
+    dicthari = {0: 'Senin', 1: 'Selasa', 2: 'Rabu', 3: 'Kamis', 4: 'Jumat'}
+    hari = 0 # 0 = senin
 
-    # Hitung Kendalltau
-    tau, p_value = stats.kendalltau(df_gabungan_check['Nilai Sentimen Saham'], df_gabungan_check['Nilai Sentimen Berita'])
+    # Hari Senin
+    df_gabungan_hari = df_gabungan_mingguan.copy()
+    df_gabungan_hari["weekday"] = pd.to_datetime(df_gabungan_hari['Tanggal Saham']).dt.dayofweek
+    df_gabungan_hari = df_gabungan_hari.loc[df_gabungan_hari["weekday"] == hari]
+    df_gabungan_hari = df_gabungan_hari.reset_index(drop=True)
+    df_gabungan_hari_check = df_gabungan_hari[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
 
-    # Hitung lag
-    lag = 28
-    df_gabungan_lag_check = util.calculate_lag(df_gabungan_check, lag)
+    # Hitung Lag Hari
+    lag1 = 4
+    df_gabungan_hari_check_lag = util.calculate_lag(df_gabungan_hari_check, lag1)
+
+    # Hitung Kendalltau Normal
+    tau1, p_value1 = stats.kendalltau(df_gabungan_check['Nilai Sentimen Saham'], df_gabungan_check['Nilai Sentimen Berita'])
+
+    # Hitung Kendalltau Hari Lag
+    tau2, p_value2 = stats.kendalltau(df_gabungan_hari_check_lag['Nilai Sentimen Saham'], df_gabungan_hari_check_lag['Nilai Sentimen Berita'])
     
-    # Grafik Sentimen Saham dan Berita
+    # Grafik Sentimen Saham dan Berita Mingguan
     st.success('Grafik Sentimen Saham Mingguan')
     st.write(util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal'))
     st.success('Grafik Sentimen Berita Mingguan')
     st.write(util.plot(df_berita_weekly, 'sentimenweekly', 'tanggal'))
 
-    # Tabel Kesesuaian
+    # Tabel Kesesuaian Mingguan
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan)')
     st.write(df_gabungan_mingguan)
     st.write('\n\n')
     st.write('\n\n')
     st.write('Skor Kesesuaian')
     st.write(str(util.calculate_score(df_gabungan_mingguan, 'Sentimen Saham', 'Sentimen Berita')))
-    
-    # Tabel Kesesuaian Data yang Sesuai
-    st.write('\n\n')
-    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) yang Sesuai')
-    st.write(df_sesuai_check.reset_index(drop=True))
-    st.write('\n\n')
-    st.write('Batas Sentimen Atas dan Bawah')
-    st.write(df_berita_check.reset_index(drop=True))
-    
-    # Korelasi Lag
+
+    # Korelasi Minguan
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi Lag =', str(lag))
-    st.write(df_gabungan_lag_check)
-    
-    # Tabel Korelasi All
-    st.write('\n\n')
-    st.write('\n\n')
-    st.write('Skor Korelasi')
+    st.write('Skor Mingguan Korelasi')
     st.write(df_gabungan_check.corr())
 
-    # Korelasi Kendalltau
+    # Korelasi Kendalltau Mingguan
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Tau =', str(tau))
-    st.write('Skor P-Value =', str(p_value))
+    st.write('Skor Tau =', str(tau1))
+    st.write('Skor P-Value =', str(p_value1))
+
+    # Tabel Kesesuaian Hari Lag
+    st.info('Kesesuaian Grafik Sentimen Saham dan Berita Hari ' + dicthari[hari] + ' (Bulanan)')
+    st.write(df_gabungan_hari)
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Kesesuaian')
+    st.write(str(util.calculate_score(df_gabungan_hari, 'Sentimen Saham', 'Sentimen Berita')))
+    
+    # Korelasi Hari Lag
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Korelasi Hari', dicthari[hari], 'Lag =', str(lag1))
+    st.write(df_gabungan_hari_check_lag.corr())
+
+    # Korelasi Kendalltau Hari Lag
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Tau =', str(tau2))
+    st.write('Skor P-Value =', str(p_value2))
