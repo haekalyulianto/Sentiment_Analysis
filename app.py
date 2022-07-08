@@ -334,6 +334,8 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
     st.write('Skor Tau = ', str(tau1))
     st.write('Skor P-Value = ', str(p_value1))
+    st.write('\n\n')
+    st.write('\n\n')
 
     # Tabel Kesesuaian Hari Lag
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita Hari ' + dicthari[hari] + ' (Bulanan)')
