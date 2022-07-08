@@ -326,14 +326,14 @@ if selected == "Kesesuaian Sentimen":
     # Korelasi Minguan
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Mingguan Korelasi')
+    st.write('Skor Korelasi')
     st.write(df_gabungan_check.corr())
 
     # Korelasi Kendalltau Mingguan
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Tau =', str(tau1))
-    st.write('Skor P-Value =', str(p_value1))
+    st.write('Skor Tau = ', str(tau1))
+    st.write('Skor P-Value = ', str(p_value1))
 
     # Tabel Kesesuaian Hari Lag
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita Hari ' + dicthari[hari] + ' (Bulanan)')
@@ -346,11 +346,11 @@ if selected == "Kesesuaian Sentimen":
     # Korelasi Hari Lag
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi Hari', dicthari[hari], 'Lag =', str(lag1))
+    st.write('Skor Korelasi')
     st.write(df_gabungan_hari_check_lag.corr())
 
     # Korelasi Kendalltau Hari Lag
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Tau =', str(tau2))
-    st.write('Skor P-Value =', str(p_value2))
+    st.write('Skor Tau = ', str(tau2))
+    st.write('Skor P-Value = ', str(p_value2))
