@@ -203,4 +203,4 @@ def calculate_lag(df, lag):
 
     df_lag = pd.DataFrame({'Nilai Sentimen Berita': nilaisentimenberita ,'Nilai Sentimen Saham': nilaisentimensaham})
 
-    return df_lag.corr()
+    return df_lag
