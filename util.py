@@ -6,7 +6,6 @@ from datetime import datetime
 from dateutil import tz
 import numpy as np
 from datetime import timedelta
-from math import floor, log10
 import pandas as pd
 
 def get_ticker_data(ticker_symbol, data_period, data_interval):
@@ -24,7 +23,14 @@ def search_key(word, period):
     google_news = GNews(language='id', country='ID', period=period, exclude_websites=None)
 
     news = google_news.get_news(word)
-    
+
+    my_bar = st.progress(0)
+
+    for i in range (len(news)):
+        time.sleep(0.1)
+        article = google_news.get_full_article(news[i]['url'])
+        news[i]['description'] = article.text
+        my_bar.progress(i + 1)
     return news
 
 def convert_date(gmt_date):
@@ -44,15 +50,6 @@ def format_date(df):
         tanggal_emiten.append(tgl)
 
     return tanggal_emiten  
-
-def detrend(df, namakolom):
-    X=df[namakolom].values
-    diff = list()
-    for i in range(1, len(X)):
-        value = X[i] - X[i - 1]
-        diff.append(value)
-
-    return diff
 
 def plot(df, namakolom1, namakolom2):
     df['batas_atas'] = df[namakolom1].mean()+(1.64*df[namakolom1].std())
@@ -165,8 +162,6 @@ def calculate_weekly_saham(df, namakolom):
     for i in range(len(df)-5):
         if (df[namakolom].iloc[i] == 0): # x/0
             weekly_saham = -1
-#         elif (df[namakolom].iloc[i+5] !=0 and df[namakolom].iloc[i] !=0 and (abs(-floor(log10(abs(df[namakolom].iloc[i]))) - 1) - (abs(-floor(log10(abs(df[namakolom].iloc[i+5]))) - 1))) >= 2): # high diff
-#             weekly_saham = weekly_saham/1.64
         else:
             weekly_saham = ((df[namakolom].iloc[i+5]-df[namakolom].iloc[i])/df[namakolom].iloc[i])
             
@@ -185,22 +180,3 @@ def calculate_score(df, namakolom1, namakolom2):
     nilai = (cocok/len(df))*100
 
     return nilai
-
-def calculate_lag(df, lag):
-    nilaisentimenberita = []
-    nilaisentimensaham = []
-
-    for i in range (lag,len(df)):
-        totalsentimenberita = 0
-        totalsentimensaham = 0
-
-        for j in range (i-lag, i):
-            totalsentimenberita += df['Nilai Sentimen Berita'].iloc[j]
-            totalsentimensaham += df['Nilai Sentimen Saham'].iloc[j]
-        
-        nilaisentimenberita.append(totalsentimenberita)
-        nilaisentimensaham.append(totalsentimensaham)
-
-    df_lag = pd.DataFrame({'Nilai Sentimen Berita': nilaisentimenberita ,'Nilai Sentimen Saham': nilaisentimensaham})
-
-    return df_lag
