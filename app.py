@@ -4,12 +4,12 @@ import streamlit as st
 import pandas as pd
 import re  
 from newspaper import Config
-from textblob import TextBlob
 from streamlit_option_menu import option_menu
 import util
 import altair as alt
 import translators as ts
 from scipy import stats
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import warnings
 warnings.simplefilter(action='ignore')
 
@@ -32,7 +32,7 @@ selected = option_menu(
 
 # Store Variable Nama Bank
 if 'nama_bank' not in st.session_state:
-    st.session_state['nama_bank'] = 'Bank Negara Indonesia'
+    st.session_state['nama_bank'] = 'IHSG'
 
 # Menu Sentimen Berita
 if selected == "Sentimen Berita":
@@ -62,6 +62,7 @@ if selected == "Sentimen Berita":
             for i in range(len(options)):
                 word = search+" site:"+options[i]
                 hasilsearch.extend(util.search_key(word, data_period))
+
         except Exception as e:
             st.write("")
 
@@ -79,7 +80,7 @@ if selected == "Sentimen Berita":
             article_summary = indonesia_news["description"]
            
             # Menampilkan Judul dan Tanggal Berita
-            st.success(article_summary)
+            st.success(article_title)
             st.write('Tanggal Berita :', published_date2)
 
             # Exception Handling
@@ -106,28 +107,32 @@ if selected == "Sentimen Berita":
                 str.maketrans('', '', string.punctuation))
 
             st.write('Link Berita : ', base_url)
-            analysis = TextBlob(news_nilai)
 
-            # TextBlob
-            try:
-                analysis = ts.google(news_nilai, from_language='id', to_language='en')
-            except Exception as e:
-                print("")
+            # Vader Sentiment Analysis
+            news_nilai = news_nilai[:4000]
+            analysis = ts.google(news_nilai, from_language='id', to_language='en')
+            sia = SentimentIntensityAnalyzer()
+            sias = sia.polarity_scores(analysis)
             
-            if TextBlob(analysis).sentiment.polarity > 0.0:
+            if sias['compound'] >= 0.05:
                 news_properties['sentimen'] = "Positif"
-                news_properties['param'] = TextBlob(analysis).sentiment.polarity
-            elif TextBlob(analysis).sentiment.polarity == 0.0:
-                news_properties['sentimen'] = "Netral"
-                news_properties['param'] = TextBlob(analysis).sentiment.polarity
-            else:
+                news_properties['param'] = sias['compound']
+                #st.write("Positif")
+            elif sias['compound'] <= 0.05:
                 news_properties['sentimen'] = "Negatif"
-                news_properties['param'] = TextBlob(analysis).sentiment.polarity
+                news_properties['param'] = sias['compound']
+                #st.write("Negatif")
+            else:
+                news_properties['sentimen'] = "Netral"
+                news_properties['param'] = sias['compound']
+                #st.write("Netral")
 
-            sentiment_dict = {'Polaritas' : TextBlob(analysis).sentiment.polarity, 'Subjektivitas' : TextBlob(analysis).sentiment.subjectivity}
-            sentiment_df = pd.DataFrame(sentiment_dict.items(), columns=['Ukuran','Nilai'])
+            # Dictionary Compuound, Positivity, Negativity, Neutrality
+            sentiment_dict = {'Gabungan' : sias['compound'], 'Positivitas' : sias['pos'], 'Negativitas' : sias['neg'], 'Netralitas' : sias['neu']}
+            sentiment_df = pd.DataFrame(sentiment_dict.items(), columns=['Ukuran', 'Nilai'])
             st.write(sentiment_dict)
             
+            # Plot Chart Dictionary
             c = alt.Chart(sentiment_df).mark_bar().encode(
                 x='Ukuran',
                 y='Nilai',
@@ -170,7 +175,7 @@ if selected == "Sentimen Pasar":
     num_periode = '1y'
     data_interval = '1d'
     
-    ticker_symbol = st.sidebar.text_input('Kode Saham :', 'BBNI')
+    ticker_symbol = st.sidebar.text_input('Kode Saham :', '^JKSE')
     data_period = st.sidebar.text_input('Periode :', num_periode)
 
     if ticker_symbol == '^JKSE' or ticker_symbol == '':
@@ -217,16 +222,6 @@ if selected == "Sentimen Pasar":
     df_berita = df_temp_2
     df_berita = df_berita.sort_values('tanggal')
 
-    # Tambahan
-    df_saham_temp = df_saham[['tanggal', 0]]
-    start_date = df_saham['tanggal'].iloc[0]
-    df_temp_3 = pd.DataFrame()
-    df_temp_3['tanggal'], df_temp_3[0] = util.form_date_mingguan(df_saham, start_date, 'tanggal')
-    df_temp_4 = df_saham_temp.append(df_temp_3)
-    df_temp_4['tanggal'] = df_saham_temp['tanggal'].append(df_temp_3['tanggal'])
-    df_saham_full = df_temp_4
-    df_saham_full = df_saham_full.sort_values('tanggal')
-
     # Hitung Sentimen Berita Mingguan
     totals, tanggals = util.calculate_weekly_berita(df_berita, df_saham, 'tanggal', 'tanggal')
     df_berita_weekly = pd.DataFrame({'tanggal': tanggals ,'sentimenweekly': totals})
@@ -241,19 +236,6 @@ if selected == "Sentimen Pasar":
     df_saham_weekly.to_csv('df_saham_weekly.csv', index=False)
     df_saham_weekly.to_excel('df_saham_weekly.xlsx', index=False)
     util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal')
-
-    # df saham full
-    df_saham_full = df_saham_full[['tanggal', 0]]
-    df_saham_full = df_saham_full.rename(columns={'tanggal': 'Tanggal Saham', 0: 'Nilai Sentimen Saham'})
-    df_saham_full = df_saham_full.reset_index(drop=True)
-    
-    df_berita_full = df_berita[['tanggal', 'nilaisentimen']]
-    df_berita_full = df_berita_full.rename(columns={'tanggal': 'Tanggal Berita', 'nilaisentimen': 'Nilai Sentimen Berita'}) 
-    df_berita_full = df_berita_full.reset_index(drop=True)
-
-    df_gabungan_full = pd.concat([df_saham_full, df_berita_full], axis=1)
-    df_gabungan_full.to_csv('df_gabungan_full.csv', index=False)
-    df_gabungan_full.to_excel('df_gabungan_full.xlsx', index=False)
     
     # Memastikan Mulai di Baris yang Sama
     df_berita_weekly = df_berita_weekly[len(df_berita_weekly)-len(df_saham_weekly):]
@@ -266,11 +248,13 @@ if selected == "Sentimen Pasar":
     df_saham_mingguan = df_saham_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
     df_saham_mingguan = df_saham_mingguan.rename(columns={'tanggal': 'Tanggal Saham', 'sentimenweekly': 'Nilai Sentimen Saham', 'sentimen': 'Sentimen Saham'})
     df_saham_mingguan = df_saham_mingguan.reset_index(drop=True)
+    df_saham_mingguan.to_csv('df_saham_mingguan.csv', index=False)
     
     # Format Data Berita Mingguan
     df_berita_mingguan = df_berita_weekly[['tanggal', 'sentimenweekly', 'sentimen']]
     df_berita_mingguan = df_berita_mingguan.rename(columns={'tanggal': 'Tanggal Berita', 'sentimenweekly': 'Nilai Sentimen Berita', 'sentimen': 'Sentimen Berita'})
     df_berita_mingguan = df_berita_mingguan.reset_index(drop=True)
+    df_berita_mingguan.to_csv('df_berita_mingguan.csv', index=False)
 
     # Data Gabungan Mingguan
     df_gabungan_mingguan = pd.concat([df_saham_mingguan, df_berita_mingguan], axis=1)
@@ -284,38 +268,42 @@ if selected == "Kesesuaian Sentimen":
     st.sidebar.image("LPS.png", output_format='PNG')
     st.header("Analisis Kesesuaian Sentimen")
 
-    # Ambil Data
+    # Ambil Data Normal
     df_gabungan_mingguan = pd.read_csv('df_gabungan_mingguan.csv')
     df_gabungan_check = df_gabungan_mingguan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
-    df_saham_weekly = pd.read_csv('df_saham_weekly.csv')
-    df_berita_weekly = pd.read_csv('df_berita_weekly.csv')
-    dicthari = {0: 'Senin', 1: 'Selasa', 2: 'Rabu', 3: 'Kamis', 4: 'Jumat'}
-    hari = 0 # 0 = senin
-
-    # Hari Senin
-    df_gabungan_hari = df_gabungan_mingguan.copy()
-    df_gabungan_hari["weekday"] = pd.to_datetime(df_gabungan_hari['Tanggal Saham']).dt.dayofweek
-    df_gabungan_hari = df_gabungan_hari.loc[df_gabungan_hari["weekday"] == hari]
-    df_gabungan_hari = df_gabungan_hari.reset_index(drop=True)
-    df_gabungan_hari_check = df_gabungan_hari[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
-
-    # Hitung Lag Hari
-    lag1 = 4
-    df_gabungan_hari_check_lag = util.calculate_lag(df_gabungan_hari_check, lag1)
+    
+    # Ambil Data EWM
+    df_ewm_gabungan = df_gabungan_mingguan.copy()
+    df_ewm_gabungan['Nilai Sentimen Saham'] = df_ewm_gabungan['Nilai Sentimen Saham'].ewm(alpha=0.1).mean()
+    df_ewm_gabungan['Nilai Sentimen Berita'] = df_ewm_gabungan['Nilai Sentimen Berita'].ewm(alpha=0.1).mean()
+    df_ewm_check = df_ewm_gabungan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
+   
+    # Ambil Data Rolling
+    window = 30
+    df_rolling_gabungan = df_gabungan_mingguan[['Tanggal Saham', 'Nilai Sentimen Saham', 'Tanggal Berita', 'Nilai Sentimen Berita']]
+    df_rolling_gabungan['Nilai Sentimen Saham'] = df_rolling_gabungan['Nilai Sentimen Saham'].rolling(window=window).sum()
+    df_rolling_gabungan['Nilai Sentimen Berita'] = df_rolling_gabungan['Nilai Sentimen Berita'].rolling(window=window).sum()
+    df_rolling_gabungan = df_rolling_gabungan[window:]
+    df_rolling_check = df_rolling_gabungan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
 
     # Hitung Kendalltau Normal
-    tau1, p_value1 = stats.kendalltau(df_gabungan_check['Nilai Sentimen Saham'], df_gabungan_check['Nilai Sentimen Berita'])
+    tau0, p_value0 = stats.kendalltau(df_gabungan_check['Nilai Sentimen Saham'], df_gabungan_check['Nilai Sentimen Berita'])
+   
+    # Hitung Kendalltau EWM
+    tau1, p_value1 = stats.kendalltau(df_ewm_check['Nilai Sentimen Saham'], df_ewm_check['Nilai Sentimen Berita'])
 
-    # Hitung Kendalltau Hari Lag
-    tau2, p_value2 = stats.kendalltau(df_gabungan_hari_check_lag['Nilai Sentimen Saham'], df_gabungan_hari_check_lag['Nilai Sentimen Berita'])
-    
-    # Grafik Sentimen Saham dan Berita Mingguan
-    st.success('Grafik Sentimen Saham Mingguan')
-    st.write(util.plot(df_saham_weekly, 'sentimenweekly', 'tanggal'))
-    st.success('Grafik Sentimen Berita Mingguan')
-    st.write(util.plot(df_berita_weekly, 'sentimenweekly', 'tanggal'))
+    # Hitung Kendalltau Rolling Window
+    tau2, p_value2 = stats.kendalltau(df_rolling_check['Nilai Sentimen Saham'], df_rolling_check['Nilai Sentimen Berita'])
 
-    # Tabel Kesesuaian Mingguan
+    # Grafik Sentimen Saham dan Berita Mingguan Normal
+    st.success('Grafik Sentimen Saham (Mingguan) Normal')
+    st.write(util.plot(df_gabungan_mingguan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
+    df_gabungan_mingguan['Sentimen Saham'] = util.create_sentimen(df_gabungan_mingguan, 'Nilai Sentimen Saham')
+    st.success('Grafik Sentimen Berita (Mingguan) Normal')
+    st.write(util.plot(df_gabungan_mingguan, 'Nilai Sentimen Berita', 'Tanggal Berita'))
+    df_gabungan_mingguan['Sentimen Berita'] = util.create_sentimen(df_gabungan_mingguan, 'Nilai Sentimen Berita')
+
+    # Tabel Kesesuaian Mingguan Normal
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan)')
     st.write(df_gabungan_mingguan)
     st.write('\n\n')
@@ -323,42 +311,76 @@ if selected == "Kesesuaian Sentimen":
     st.write('Skor Kesesuaian')
     st.write(str(util.calculate_score(df_gabungan_mingguan, 'Sentimen Saham', 'Sentimen Berita')))
 
-    # Korelasi Minguan
+    # Korelasi Minguan Normal
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi')
+    st.write('Skor Korelasi (Pearson)')
     st.write(df_gabungan_check.corr())
 
-    # Korelasi Kendalltau Mingguan
+    # Korelasi Kendalltau Mingguan Normal
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Tau = ', str(tau1))
-    st.write('Skor P-Value = ', str(p_value1))
+    st.write('Skor Korelasi (Kendalltau) = ', str(tau0))
+    #st.write('Skor P-Value = ', str(p_value1))
     st.write('\n\n')
     st.write('\n\n')
-
-    # Grafik Sentimen Saham dan Berita Hari Lag
-    st.success('Grafik Sentimen Saham ' + dicthari[hari] + ' (Bulanan)')
-    st.write(util.plot(df_gabungan_hari[['Tanggal Saham', 'Nilai Sentimen Saham']], 'Nilai Sentimen Saham', 'Tanggal Saham'))
-    st.success('Grafik Sentimen Berita ' + dicthari[hari] + ' (Bulanan)')
-    st.write(util.plot(df_gabungan_hari[['Tanggal Berita', 'Nilai Sentimen Berita']], 'Nilai Sentimen Berita', 'Tanggal Berita'))
     
-    # Tabel Kesesuaian Hari Lag
-    st.info('Kesesuaian Grafik Sentimen Saham dan Berita Hari ' + dicthari[hari] + ' (Bulanan)')
-    st.write(df_gabungan_hari)
+    # Grafik Sentimen Saham dan Berita Mingguan EWM
+    st.success('Grafik Sentimen Saham (Mingguan) EWM')
+    st.write(util.plot(df_ewm_gabungan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
+    df_ewm_gabungan['Sentimen Saham'] = util.create_sentimen(df_ewm_gabungan, 'Nilai Sentimen Saham')
+    st.success('Grafik Sentimen Berita (Mingguan) EWM')
+    st.write(util.plot(df_ewm_gabungan, 'Nilai Sentimen Berita', 'Tanggal Berita'))
+    df_ewm_gabungan['Sentimen Berita'] = util.create_sentimen(df_ewm_gabungan, 'Nilai Sentimen Berita')
+
+    # Tabel Kesesuaian Mingguan EWM
+    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) EWM')
+    st.write(df_ewm_gabungan)
     st.write('\n\n')
     st.write('\n\n')
     st.write('Skor Kesesuaian')
-    st.write(str(util.calculate_score(df_gabungan_hari, 'Sentimen Saham', 'Sentimen Berita')))
-    
-    # Korelasi Hari Lag
-    st.write('\n\n')
-    st.write('\n\n')
-    st.write('Skor Korelasi')
-    st.write(df_gabungan_hari_check_lag.corr())
+    st.write(str(util.calculate_score(df_ewm_gabungan, 'Sentimen Saham', 'Sentimen Berita')))
 
-    # Korelasi Kendalltau Hari Lag
+    # Korelasi Minguan EWM
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Tau = ', str(tau2))
-    st.write('Skor P-Value = ', str(p_value2))
+    st.write('Skor Korelasi (Pearson)')
+    st.write(df_ewm_check.corr())
+
+    # Korelasi Kendalltau Mingguan EWM
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Korelasi (Kendalltau) = ', str(tau1))
+    #st.write('Skor P-Value = ', str(p_value1))
+    st.write('\n\n')
+    st.write('\n\n')
+
+    # Grafik Sentimen Saham dan Berita Mingguan Rolling Window
+    st.success('Grafik Sentimen Saham (Mingguan) Rolling Window = ' + str(window))
+    st.write(util.plot(df_rolling_gabungan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
+    df_rolling_gabungan['Sentimen Saham'] = util.create_sentimen(df_rolling_gabungan, 'Nilai Sentimen Saham')
+    st.success('Grafik Sentimen Berita (Mingguan) Rolling Window = ' + str(window))
+    st.write(util.plot(df_rolling_gabungan, 'Nilai Sentimen Berita', 'Tanggal Berita'))
+    df_rolling_gabungan['Sentimen Berita'] = util.create_sentimen(df_rolling_gabungan, 'Nilai Sentimen Berita')
+
+    # Tabel Kesesuaian Mingguan Rolling Window
+    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) Rolling Window = ' + str(window))
+    st.write(df_rolling_gabungan[['Tanggal Saham', 'Nilai Sentimen Saham', 'Sentimen Saham', 'Tanggal Berita', 'Nilai Sentimen Berita', 'Sentimen Berita']])
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Kesesuaian')
+    st.write(str(util.calculate_score(df_rolling_gabungan, 'Sentimen Saham', 'Sentimen Berita')))
+
+    # Korelasi Minguan Rolling Window
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Korelasi (Pearson)')
+    st.write(df_rolling_check.corr())
+
+    # Korelasi Kendalltau Mingguan Rolling Window
+    st.write('\n\n')
+    st.write('\n\n')
+    st.write('Skor Korelasi (Kendalltau) = ', str(tau2))
+    #st.write('Skor P-Value = ', str(p_value2))
+    st.write('\n\n')
+    st.write('\n\n')
