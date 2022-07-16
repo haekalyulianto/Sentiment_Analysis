@@ -32,7 +32,7 @@ selected = option_menu(
 
 # Store Variable Nama Bank
 if 'nama_bank' not in st.session_state:
-    st.session_state['nama_bank'] = 'IHSG'
+    st.session_state['nama_bank'] = 'Bank Central Asia'
 
 # Menu Sentimen Berita
 if selected == "Sentimen Berita":
@@ -175,7 +175,7 @@ if selected == "Sentimen Pasar":
     num_periode = '1y'
     data_interval = '1d'
     
-    ticker_symbol = st.sidebar.text_input('Kode Saham :', '^JKSE')
+    ticker_symbol = st.sidebar.text_input('Kode Saham :', 'BBCA')
     data_period = st.sidebar.text_input('Periode :', num_periode)
 
     if ticker_symbol == '^JKSE' or ticker_symbol == '':
