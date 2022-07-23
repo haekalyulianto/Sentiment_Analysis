@@ -1,8 +1,8 @@
-# Analisis Sentimen Berita dan Saham
-News and Stock Price Sentiment Analysis
-<br />
-<br />
+# News and Stock Price Sentiment Analysis
 Group Pengelolaan Data dan Statistik (GPDS)
+<br />
+<br />
+Lembaga Penjamin Simpanan (LPS)
 <br />
 <br />
 # Authors
