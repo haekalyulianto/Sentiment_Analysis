@@ -4,6 +4,7 @@ gnews==0.2.7
 nltk==3.7
 newspaper3k==0.2.8
 numpy==1.22.3
+openpyxl==3.0.10
 pandas==1.4.2
 plotly==5.6.0
 regex==2022.3.15
