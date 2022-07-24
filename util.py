@@ -7,6 +7,11 @@ from dateutil import tz
 import numpy as np
 from datetime import timedelta
 import pandas as pd
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+import time
+from nltk.corpus import stopwords
+import nltk
+nltk.download('stopwords')
 
 def get_ticker_data(ticker_symbol, data_period, data_interval):
     ticker_data = yf.download(tickers=ticker_symbol,
@@ -160,7 +165,7 @@ def calculate_weekly_saham(df, namakolom):
     tanggals = []
     
     for i in range(len(df)-5):
-        if (df[namakolom].iloc[i] == 0): # x/0
+        if ((df[namakolom].iloc[i] == 0)): # x/0
             weekly_saham = -1
         else:
             weekly_saham = ((df[namakolom].iloc[i+5]-df[namakolom].iloc[i])/df[namakolom].iloc[i])
@@ -180,3 +185,19 @@ def calculate_score(df, namakolom1, namakolom2):
     nilai = (cocok/len(df))*100
 
     return nilai
+
+def stemmingText(text): 
+    factory = StemmerFactory()
+    stemmer = factory.create_stemmer()
+    text = stemmer.stem(text)
+    return text
+
+def filteringText(text):
+    listStopwords = set(stopwords.words('indonesian'))
+    filtered = ''
+    for txt in text:
+        if txt not in listStopwords:
+            #filtered.append(txt)
+            filtered+=txt
+    text = filtered 
+    return text
