@@ -267,6 +267,8 @@ if selected == "Kesesuaian Sentimen":
     # Sunting Sidebar
     st.sidebar.image("LPS.png", output_format='PNG')
     st.header("Analisis Kesesuaian Sentimen")
+    window = st.sidebar.number_input('Window : ', value = 30, step = 1)
+    alpha = st.sidebar.number_input('Alpha : ', value = 0.1, step = 0.1)
 
     # Ambil Data Normal
     df_gabungan_mingguan = pd.read_csv('df_gabungan_mingguan.csv')
@@ -274,12 +276,11 @@ if selected == "Kesesuaian Sentimen":
     
     # Ambil Data EWM
     df_ewm_gabungan = df_gabungan_mingguan.copy()
-    df_ewm_gabungan['Nilai Sentimen Saham'] = df_ewm_gabungan['Nilai Sentimen Saham'].ewm(alpha=0.1).mean()
-    df_ewm_gabungan['Nilai Sentimen Berita'] = df_ewm_gabungan['Nilai Sentimen Berita'].ewm(alpha=0.1).mean()
+    df_ewm_gabungan['Nilai Sentimen Saham'] = df_ewm_gabungan['Nilai Sentimen Saham'].ewm(alpha=alpha).mean()
+    df_ewm_gabungan['Nilai Sentimen Berita'] = df_ewm_gabungan['Nilai Sentimen Berita'].ewm(alpha=alpha).mean()
     df_ewm_check = df_ewm_gabungan[['Nilai Sentimen Saham', 'Nilai Sentimen Berita']]
    
     # Ambil Data Rolling
-    window = 30
     df_rolling_gabungan = df_gabungan_mingguan[['Tanggal Saham', 'Nilai Sentimen Saham', 'Tanggal Berita', 'Nilai Sentimen Berita']]
     df_rolling_gabungan['Nilai Sentimen Saham'] = df_rolling_gabungan['Nilai Sentimen Saham'].rolling(window=window).sum()
     df_rolling_gabungan['Nilai Sentimen Berita'] = df_rolling_gabungan['Nilai Sentimen Berita'].rolling(window=window).sum()
@@ -321,15 +322,15 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
     st.write('\n\n')
     st.write('Skor Korelasi (Kendalltau) = ', str(tau0))
-    #st.write('Skor P-Value = ', str(p_value1))
+    st.write('Skor P-Value = ', str(p_value1))
     st.write('\n\n')
     st.write('\n\n')
     
     # Grafik Sentimen Saham dan Berita Mingguan EWM
-    st.success('Grafik Sentimen Saham (Mingguan) EWM')
+    st.success('Grafik Sentimen Saham (Mingguan) EWM Alpha: ' + str(round(alpha, 2)))
     st.write(util.plot(df_ewm_gabungan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
     df_ewm_gabungan['Sentimen Saham'] = util.create_sentimen(df_ewm_gabungan, 'Nilai Sentimen Saham')
-    st.success('Grafik Sentimen Berita (Mingguan) EWM')
+    st.success('Grafik Sentimen Berita (Mingguan) EWM' + str(round(alpha, 2)))
     st.write(util.plot(df_ewm_gabungan, 'Nilai Sentimen Berita', 'Tanggal Berita'))
     df_ewm_gabungan['Sentimen Berita'] = util.create_sentimen(df_ewm_gabungan, 'Nilai Sentimen Berita')
 
@@ -350,21 +351,21 @@ if selected == "Kesesuaian Sentimen":
     # Korelasi Kendalltau Mingguan EWM
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi (Kendalltau) = ', str(tau1))
-    #st.write('Skor P-Value = ', str(p_value1))
+    st.write('Skor Korelasi (Kendalltau) : ', str(tau1))
+    st.write('Skor P-Value : ', str(p_value1))
     st.write('\n\n')
     st.write('\n\n')
 
     # Grafik Sentimen Saham dan Berita Mingguan Rolling Window
-    st.success('Grafik Sentimen Saham (Mingguan) Rolling Window = ' + str(window))
+    st.success('Grafik Sentimen Saham (Mingguan) Rolling Window : ' + str(round(window, 1))
     st.write(util.plot(df_rolling_gabungan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
     df_rolling_gabungan['Sentimen Saham'] = util.create_sentimen(df_rolling_gabungan, 'Nilai Sentimen Saham')
-    st.success('Grafik Sentimen Berita (Mingguan) Rolling Window = ' + str(window))
+    st.success('Grafik Sentimen Berita (Mingguan) Rolling Window = ' + str(round(window, 1)))
     st.write(util.plot(df_rolling_gabungan, 'Nilai Sentimen Berita', 'Tanggal Berita'))
     df_rolling_gabungan['Sentimen Berita'] = util.create_sentimen(df_rolling_gabungan, 'Nilai Sentimen Berita')
 
     # Tabel Kesesuaian Mingguan Rolling Window
-    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) Rolling Window = ' + str(window))
+    st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) Rolling Window : ' + str(window))
     st.write(df_rolling_gabungan[['Tanggal Saham', 'Nilai Sentimen Saham', 'Sentimen Saham', 'Tanggal Berita', 'Nilai Sentimen Berita', 'Sentimen Berita']])
     st.write('\n\n')
     st.write('\n\n')
@@ -380,7 +381,7 @@ if selected == "Kesesuaian Sentimen":
     # Korelasi Kendalltau Mingguan Rolling Window
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi (Kendalltau) = ', str(tau2))
-    #st.write('Skor P-Value = ', str(p_value2))
+    st.write('Skor Korelasi (Kendalltau) : ', str(tau2))
+    st.write('Skor P-Value : ', str(p_value2))
     st.write('\n\n')
     st.write('\n\n')
