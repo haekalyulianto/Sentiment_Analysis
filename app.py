@@ -306,7 +306,7 @@ if selected == "Kesesuaian Sentimen":
 
     # Tabel Kesesuaian Mingguan Normal
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan)')
-    st.write(df_gabungan_mingguan)
+    st.write(df_gabungan_mingguan[['Tanggal Saham', 'Nilai Sentimen Saham', 'Sentimen Saham', 'Tanggal Berita', 'Nilai Sentimen Berita', 'Sentimen Berita']])
     st.write('\n\n')
     st.write('\n\n')
     st.write('Skor Kesesuaian')
@@ -336,7 +336,7 @@ if selected == "Kesesuaian Sentimen":
 
     # Tabel Kesesuaian Mingguan EWM
     st.info('Kesesuaian Grafik Sentimen Saham dan Berita (Mingguan) EWM')
-    st.write(df_ewm_gabungan)
+    st.write(df_ewm_gabungan[['Tanggal Saham', 'Nilai Sentimen Saham', 'Sentimen Saham', 'Tanggal Berita', 'Nilai Sentimen Berita', 'Sentimen Berita']])
     st.write('\n\n')
     st.write('\n\n')
     st.write('Skor Kesesuaian')
