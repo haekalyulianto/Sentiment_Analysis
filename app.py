@@ -357,7 +357,7 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
 
     # Grafik Sentimen Saham dan Berita Mingguan Rolling Window
-    st.success('Grafik Sentimen Saham (Mingguan) Rolling Window : ' + str(round(window, 1))
+    st.success('Grafik Sentimen Saham (Mingguan) Rolling Window : ' + str(round(window, 1)))
     st.write(util.plot(df_rolling_gabungan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
     df_rolling_gabungan['Sentimen Saham'] = util.create_sentimen(df_rolling_gabungan, 'Nilai Sentimen Saham')
     st.success('Grafik Sentimen Berita (Mingguan) Rolling Window = ' + str(round(window, 1)))
