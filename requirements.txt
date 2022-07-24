@@ -8,6 +8,8 @@ openpyxl==3.0.10
 pandas==1.4.2
 plotly==5.6.0
 regex==2022.3.15
+sastrawi==1.0.1 
+scikit-learn==1.0.2 
 scipy==1.7.3
 streamlit==1.8.1
 streamlit-option-menu==0.3.2
