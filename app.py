@@ -90,55 +90,78 @@ if selected == "Sentimen Berita":
                 news_properties["tanggal"] = published_date2
                 news_properties["isi_news"] = article_summary
             except Exception as e:
-                print("error convert")
+                print("Convert Error")
             
             # Tokenizing
             news_nilai = ' '.join(re.sub(
                 "(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|(\d+)", " ", str(article_summary)).split())
+            news_nilai2 = ' '.join(re.sub(
+                "(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|(\d+)", " ", str(article_title)).split())
             
             # Case Folding
             news_nilai = news_nilai.lower()
+            news_nilai2 = news_nilai2.lower()
             
             # Menghapus Whitepace
             news_nilai = news_nilai.strip()
+            news_nilai2 = news_nilai2.strip()
             
             # Menghapus Tanda Baca
-            news_nilai = news_nilai.translate(
-                str.maketrans('', '', string.punctuation))
+            news_nilai = news_nilai.translate(str.maketrans('', '', string.punctuation))
+            news_nilai2 = news_nilai2.translate(str.maketrans('', '', string.punctuation))
+
+            news_nilai = util.filteringText(news_nilai)
+            news_nilai2 = util.filteringText(news_nilai2)
+            
+            news_nilai = util.stemmingText(news_nilai)
+            news_nilai2 = util.stemmingText(news_nilai2)
 
             st.write('Link Berita : ', base_url)
 
             # Vader Sentiment Analysis
             news_nilai = news_nilai[:4000]
             analysis = ts.google(news_nilai, from_language='id', to_language='en')
+            analysis2 = ts.google(news_nilai2, from_language='id', to_language='en')
             sia = SentimentIntensityAnalyzer()
+
             sias = sia.polarity_scores(analysis)
-            
-            if sias['compound'] >= 0.05:
+            sias2 = sia.polarity_scores(analysis2)
+
+            if ((sias['compound']+sias2['compound'])/2) >= 0.05:
                 news_properties['sentimen'] = "Positif"
-                news_properties['param'] = sias['compound']
-                #st.write("Positif")
-            elif sias['compound'] <= 0.05:
+                news_properties['param'] = (sias['compound']+sias2['compound'])/2
+ 
+            elif ((sias['compound']+sias2['compound'])/2) <= 0.05:
                 news_properties['sentimen'] = "Negatif"
-                news_properties['param'] = sias['compound']
-                #st.write("Negatif")
+                news_properties['param'] = (sias['compound']+sias2['compound'])/2
+           
             else:
                 news_properties['sentimen'] = "Netral"
-                news_properties['param'] = sias['compound']
-                #st.write("Netral")
+                news_properties['param'] = (sias['compound']+sias2['compound'])/2
 
-            # Dictionary Compuound, Positivity, Negativity, Neutrality
             sentiment_dict = {'Gabungan' : sias['compound'], 'Positivitas' : sias['pos'], 'Negativitas' : sias['neg'], 'Netralitas' : sias['neu']}
             sentiment_df = pd.DataFrame(sentiment_dict.items(), columns=['Ukuran', 'Nilai'])
-            st.write(sentiment_dict)
-            
+
+            sentiment_dict2 = {'Gabungan' : sias2['compound'], 'Positivitas' : sias2['pos'], 'Negativitas' : sias2['neg'], 'Netralitas' : sias2['neu']}
+            sentiment_df2 = pd.DataFrame(sentiment_dict2.items(), columns=['Ukuran', 'Nilai'])
+
             # Plot Chart Dictionary
             c = alt.Chart(sentiment_df).mark_bar().encode(
                 x='Ukuran',
                 y='Nilai',
                 color='Ukuran'
                 )
-                
+
+            c2 = alt.Chart(sentiment_df2).mark_bar().encode(
+                x='Ukuran',
+                y='Nilai',
+                color='Ukuran'
+                )
+            
+            st.write('Headline Berita')     
+            st.altair_chart(c2, use_container_width=True)
+            
+            st.write('Konten Berita')     
             st.altair_chart(c, use_container_width=True)
             
             hasilanalisis.append(news_properties)
