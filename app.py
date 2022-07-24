@@ -321,8 +321,8 @@ if selected == "Kesesuaian Sentimen":
     # Korelasi Kendalltau Mingguan Normal
     st.write('\n\n')
     st.write('\n\n')
-    st.write('Skor Korelasi (Kendalltau) = ', str(tau0))
-    st.write('Skor P-Value = ', str(p_value1))
+    st.write('Skor Korelasi (Kendalltau) : ', str(tau0))
+    st.write('Skor P-Value : ', str(p_value1))
     st.write('\n\n')
     st.write('\n\n')
     
