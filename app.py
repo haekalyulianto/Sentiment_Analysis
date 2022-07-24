@@ -327,10 +327,10 @@ if selected == "Kesesuaian Sentimen":
     st.write('\n\n')
     
     # Grafik Sentimen Saham dan Berita Mingguan EWM
-    st.success('Grafik Sentimen Saham (Mingguan) EWM Alpha: ' + str(round(alpha, 2)))
+    st.success('Grafik Sentimen Saham (Mingguan) EWM dengan Alpha : ' + str(round(alpha, 2)))
     st.write(util.plot(df_ewm_gabungan, 'Nilai Sentimen Saham', 'Tanggal Saham'))
     df_ewm_gabungan['Sentimen Saham'] = util.create_sentimen(df_ewm_gabungan, 'Nilai Sentimen Saham')
-    st.success('Grafik Sentimen Berita (Mingguan) EWM' + str(round(alpha, 2)))
+    st.success('Grafik Sentimen Berita (Mingguan) EWM dengan Alpha :' + str(round(alpha, 2)))
     st.write(util.plot(df_ewm_gabungan, 'Nilai Sentimen Berita', 'Tanggal Berita'))
     df_ewm_gabungan['Sentimen Berita'] = util.create_sentimen(df_ewm_gabungan, 'Nilai Sentimen Berita')
 
