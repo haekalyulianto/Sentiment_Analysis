@@ -32,7 +32,7 @@ selected = option_menu(
 
 # Store Variable Nama Bank
 if 'nama_bank' not in st.session_state:
-    st.session_state['nama_bank'] = 'Bank Central Asia'
+    st.session_state['nama_bank'] = 'BBCA'
 
 # Menu Sentimen Berita
 if selected == "Sentimen Berita":
