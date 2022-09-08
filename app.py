@@ -8,6 +8,7 @@ from streamlit_option_menu import option_menu
 import util
 import altair as alt
 import translators as ts
+import plotly.graph_objs as go
 from scipy import stats
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import matplotlib
