@@ -446,7 +446,7 @@ if selected == "Twitter":
 
         fig = go.Figure(layout=layout)
 
-        fig.add_trace(go.Scatter(x=df_tweets['Tweet'].str[:5], 
+        fig.add_trace(go.Scatter(x=df_tweets['Tanggal'].str[:10], 
                             y=df_tweets['Jumlah Retweet'], 
                             name='Tweet'))
         
