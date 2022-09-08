@@ -438,13 +438,6 @@ if selected == "Twitter":
         st.write('\n\n')
         st.write('\n\n')
 
-        st.success('Regression Plot Jumlah Retweet dengan Jumlah Favourite')
-        fig = plt.figure(figsize=(6, 6))
-        sns.regplot(x='Jumlah Favourite', y='Jumlah Retweet', data=df_tweets)
-        st.pyplot(fig)
-        st.write('\n\n')
-        st.write('\n\n')
-
         st.success('Grafik Jumlah Retweet terhadap Tweet')
         fig = plt.figure(figsize=(6, 6))
         sns.lineplot(data=df_tweets['Jumlah Retweet'])
