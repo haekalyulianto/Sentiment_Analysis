@@ -1,4 +1,4 @@
-# News and Stock Price Sentiment Analysis
+# Sentiment Analysis
 Group Pengelolaan Data dan Statistik (GPDS)
 <br />
 <br />
