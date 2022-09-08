@@ -416,7 +416,7 @@ if selected == "Kesesuaian Sentimen":
 if selected == "Twitter":
     # Sunting Sidebar
     st.sidebar.image("LPS.png", output_format='PNG')
-    keyword = 'Lembaga Penjamin Simpanan'
+    keyword = 'Dijamin LPS'
     keyword = st.sidebar.text_input('Pencarian :', keyword)
     
     # Sunting Header
