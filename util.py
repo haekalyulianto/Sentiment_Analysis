@@ -27,7 +27,7 @@ def get_ticker_data(ticker_symbol, data_period, data_interval):
 def search_key(word, period):
     google_news = GNews(language='id', country='ID', period=period, exclude_websites=None)
 
-    news = google_news.get_news(word)
+    news = google_news.get_news(word+'&')
 
     my_bar = st.progress(0)
 
