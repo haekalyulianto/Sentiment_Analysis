@@ -235,11 +235,11 @@ def process_tweets(search_result):
     pl = pd.DataFrame(
         {'id': ids,
         'Tweet': texts,
-        'Tanggal':date
+        'Tanggal':date,
         'Jumlah Retweet': times,
         'Jumlah Favourite':favtimes,
         'Lokasi':location,
-        'Bahasa':lang,
+        'Bahasa':lang
         }
     )
 
