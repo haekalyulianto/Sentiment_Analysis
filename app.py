@@ -439,9 +439,20 @@ if selected == "Twitter":
         st.write('\n\n')
 
         st.success('Grafik Jumlah Retweet terhadap Tweet')
-        fig = plt.figure(figsize=(6, 6))
-        sns.lineplot(data=df_tweets['Jumlah Retweet'])
-        st.pyplot(fig)
+        layout = go.Layout(
+          paper_bgcolor='rgba(0,0,0,0)',
+          plot_bgcolor='rgba(0,0,0,0)')
+
+        fig = go.Figure(layout=layout)
+
+        fig.add_trace(go.Scatter(x=df_tweets['Tweet'], 
+                            y=df_tweets['Jumlah Retweet'], 
+                            name='Tweet'))
+        
+        fig.update_layout(height=540)
+        fig.update_layout(width=960)
+        st.write(fig)
+        
         st.write('\n\n')
         st.write('\n\n')
     else:
