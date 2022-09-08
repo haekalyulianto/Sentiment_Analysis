@@ -10,6 +10,9 @@ import altair as alt
 import translators as ts
 from scipy import stats
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 import warnings
 warnings.simplefilter(action='ignore')
 
@@ -23,16 +26,16 @@ do_refresh = st.sidebar.button('Refresh')
 # Konfigurasi Pilihan Menu
 selected = option_menu(
     menu_title=None,
-    options=["Sentimen Berita", "Sentimen Pasar", "Kesesuaian Sentimen"],
-    icons=["newspaper", "bank", "graph-up"],
+    options=["Sentimen Berita", "Sentimen Pasar", "Kesesuaian Sentimen", "Twitter"],
+    icons=["newspaper", "bank", "graph-up", "twitter"],
     menu_icon="cast",
-    default_index=1,
+    default_index=0,
     orientation="horizontal",
 )
 
 # Store Variable Nama Bank
 if 'nama_bank' not in st.session_state:
-    st.session_state['nama_bank'] = 'BBCA'
+    st.session_state['nama_bank'] = 'Bank Central Asia'
 
 # Menu Sentimen Berita
 if selected == "Sentimen Berita":
@@ -408,3 +411,57 @@ if selected == "Kesesuaian Sentimen":
     st.write('Skor P-Value : ', str(p_value2))
     st.write('\n\n')
     st.write('\n\n')
+
+# Menu Twitter
+if selected == "Twitter":
+    # Sunting Sidebar
+    st.sidebar.image("LPS.png", output_format='PNG')
+    keyword = 'Lembaga Penjamin Simpanan'
+    keyword = st.sidebar.text_input('Pencarian :', keyword)
+    
+    # Sunting Header
+    st.header("Analisis Tweet Twitter")
+    
+    # Menjalankan Analisis Sentimen Berita
+    if st.sidebar.button('Run'):
+        search_result = util.search_tweets(keyword)
+        df_tweets = util.process_tweets(search_result)
+
+        st.success('Hasil Pencarian Tweet')
+        st.write(df_tweets)
+        st.write('\n\n')
+        st.write('\n\n')
+
+        st.success('Deskripsi Statistik Hasil Pencarian Tweet')
+        pd.set_option('display.float_format', lambda x: '%.2f' % x)
+        st.write(df_tweets[['retweet_count','fav_count']].describe().T)
+        st.write('\n\n')
+        st.write('\n\n')
+
+        st.success('Korelasi Jumlah Retweet dengan Jumlah Favourite')
+        st.write(df_tweets['retweet_count'].corr(df_tweets['fav_count']))
+        st.write('\n\n')
+        st.write('\n\n')
+
+        st.success('Scatter Plot Jumlah Retweet dengan Jumlah Favourite')
+        fig = plt.figure(figsize=(6, 6))
+        sns.scatterplot(x='fav_count', y='retweet_count', data=df_tweets)
+        st.pyplot(fig)
+        st.write('\n\n')
+        st.write('\n\n')
+
+        st.success('Regression Plot Jumlah Retweet dengan Jumlah Favourite')
+        fig = plt.figure(figsize=(6, 6))
+        sns.regplot(x='fav_count', y='retweet_count', data=df_tweets)
+        st.pyplot(fig)
+        st.write('\n\n')
+        st.write('\n\n')
+
+        st.success('Grafik Jumlah Retweet terhadap Tweet')
+        fig = plt.figure(figsize=(6, 6))
+        sns.lineplot(data=df_tweets['retweet_count'])
+        st.pyplot(fig)
+        st.write('\n\n')
+        st.write('\n\n')
+    else:
+        st.write('Tekan Run untuk menjalankan')
