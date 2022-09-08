@@ -438,18 +438,6 @@ if selected == "Twitter":
         st.write('\n\n')
         st.write('\n\n')
 
-        st.success('Korelasi Jumlah Retweet dengan Jumlah Favourite')
-        st.write(df_tweets['Jumlah Retweet'].corr(df_tweets['Jumlah Favourite']))
-        st.write('\n\n')
-        st.write('\n\n')
-
-        st.success('Scatter Plot Jumlah Retweet dengan Jumlah Favourite')
-        fig = plt.figure(figsize=(6, 6))
-        sns.scatterplot(x='Jumlah Favourite', y='Jumlah Retweet', data=df_tweets)
-        st.pyplot(fig)
-        st.write('\n\n')
-        st.write('\n\n')
-
         st.success('Regression Plot Jumlah Retweet dengan Jumlah Favourite')
         fig = plt.figure(figsize=(6, 6))
         sns.regplot(x='Jumlah Favourite', y='Jumlah Retweet', data=df_tweets)
