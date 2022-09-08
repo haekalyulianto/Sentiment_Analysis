@@ -234,13 +234,12 @@ def process_tweets(search_result):
 
     pl = pd.DataFrame(
         {'id': ids,
-        'text': texts,
-        'retweet_count': times,
-        'fav_count':favtimes,
-        'follower_count':follower_count,
-        'location':location,
-        'lang':lang,
-        'tweet_date':date
+        'Tweet': texts,
+        'Tanggal':date
+        'Jumlah Retweet': times,
+        'Jumlah Favourite':favtimes,
+        'Lokasi':location,
+        'Bahasa':lang,
         }
     )
 
