@@ -8,6 +8,7 @@ import numpy as np
 from datetime import timedelta
 import pandas as pd
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+from twython import Twython
 import time
 from nltk.corpus import stopwords
 import nltk
@@ -201,3 +202,46 @@ def filteringText(text):
             filtered+=txt
     text = filtered 
     return text
+
+def get_access_token():
+    APP_KEY = 'jDoiK1NQq8BvLfGKxZOmRlCq2'
+    APP_SECRET = 'rJSajv6auDx9SAOyktZLgN9JJq4rSqgxKPlFBWST7hT1MgbE3d'
+    twitter = Twython(APP_KEY, APP_SECRET, oauth_version=2)
+    ACCESS_TOKEN = twitter.obtain_access_token()
+    twitter = Twython(APP_KEY, access_token=ACCESS_TOKEN)
+
+    return twitter
+
+def search_tweets(keyword):
+    twitter = get_access_token()
+    search_result = twitter.search(q=keyword, count=2000)
+
+    return search_result
+
+def process_tweets(search_result):
+    tweets = search_result['statuses']
+
+    ids = []
+
+    ids = [tweet['id_str'] for tweet in tweets]
+    texts = [tweet['text'] for tweet in tweets]
+    times = [tweet['retweet_count'] for tweet in tweets]
+    favtimes = [tweet['favorite_count'] for tweet in tweets]
+    follower_count = [tweet['user']['followers_count'] for tweet in tweets]
+    location = [tweet['user']['location'] for tweet in tweets]
+    lang = [tweet['lang'] for tweet in tweets]
+    date = [tweet['created_at'] for tweet in tweets]
+
+    pl = pd.DataFrame(
+        {'id': ids,
+        'text': texts,
+        'retweet_count': times,
+        'fav_count':favtimes,
+        'follower_count':follower_count,
+        'location':location,
+        'lang':lang,
+        'tweet_date':date
+        }
+    )
+
+    return pl
