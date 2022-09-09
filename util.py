@@ -239,8 +239,7 @@ def process_tweets(search_result):
         'Jumlah Retweet': times,
         'Jumlah Favourite':favtimes,
         'Lokasi':location,
-        'Bahasa':lang,
-        'Jumlah Follower':follower_count
+        'Bahasa':lang
         }
     )
 
